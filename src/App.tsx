@@ -1,3 +1,4 @@
+// src/App.tsx
 import { useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import LoadingScreen from './components/LoadingScreen';
@@ -93,13 +94,8 @@ export default function App() {
   const totalPaid = paidBills.reduce((sum, bill) => sum + bill.amount, 0);
   const balance = availableMoney - totalBills + totalPaid;
 
-  // Função para adicionar notificação 
-  const addNotification = (notification: { 
-    title: string; 
-    message: string; 
-    date: string; 
-    type: 'bill' | 'reminder' | 'system';
-  }) => {
+  // Função para adicionar notificação
+  const addNotification = (notification: Omit<Notification, 'id' | 'read'>) => {
     const newNotification: Notification = {
       ...notification,
       id: Date.now().toString(),

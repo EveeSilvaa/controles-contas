@@ -1,7 +1,9 @@
+/// src/components/Dashboard.tsx
+import React from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Wallet, CreditCard } from 'lucide-react';
 
-export interface DashboardProps {
+interface DashboardProps {
   availableMoney: number;
   totalBills: number;
   totalPaid: number;
@@ -10,120 +12,7 @@ export interface DashboardProps {
   totalBillsCount: number;
   onMoneyChange: (amount: number) => void;
   darkMode: boolean;
-  addNotification: (notification: Omit<Notification, 'id' | 'read'>) => void;
-}
-
-export default function Dashboard({
-  availableMoney,
-  totalBills,
-  totalPaid,
-  balance,
-  paidBillsCount,
-  totalBillsCount,
-  onMoneyChange,
-  darkMode
-}: DashboardProps) {
-  const stats: Stat[] = [
-    {
-      title: 'Saldo Disponível',
-      value: availableMoney,
-      formattedValue: `R$ ${availableMoney.toFixed(2)}`,
-      icon: Wallet,
-      color: 'green',
-      trend: 'up' as const,
-      change: '+12%',
-      isInput: true
-    },
-    {
-      title: 'Total de Contas',
-      value: totalBills,
-      formattedValue: `R$ ${totalBills.toFixed(2)}`,
-      icon: CreditCard,
-      color: 'blue',
-      trend: 'neutral' as const,
-      change: `${totalBillsCount} contas`
-    },
-    {
-      title: 'Contas Pagas',
-      value: totalPaid,
-      formattedValue: `R$ ${totalPaid.toFixed(2)}`,
-      icon: TrendingUp,
-      color: 'green',
-      trend: 'up',
-      change: `${paidBillsCount} de ${totalBillsCount}`
-    },
-    {
-      title: 'Saldo Final',
-      value: balance,
-      formattedValue: `R$ ${balance.toFixed(2)}`,
-      icon: balance >= 0 ? TrendingUp : TrendingDown,
-      color: balance >= 0 ? 'green' : 'red',
-      trend: balance >= 0 ? 'up' as const : 'down' as const,
-      change: balance >= 0 ? 'Positivo' : 'Negativo'
-    }
-  ];
-
-  return (
-    <motion.div
-      className="space-y-6"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-    >
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          Dashboard Financeiro
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Visão geral das suas finanças e contas
-        </p>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
-          <StatCard
-            key={stat.title}
-            stat={stat}
-            index={index}
-            darkMode={darkMode}
-            onMoneyChange={onMoneyChange}
-          />
-        ))}
-      </div>
-
-      {/* Charts Placeholder */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <motion.div
-          className="card-modern h-80"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Despesas por Categoria
-          </h3>
-          <div className="flex items-center justify-center h-48 text-gray-400 dark:text-gray-500">
-            Gráfico de categorias será implementado aqui
-          </div>
-        </motion.div>
-
-        <motion.div
-          className="card-modern h-80"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.6 }}
-        >
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Histórico de Pagamentos
-          </h3>
-          <div className="flex items-center justify-center h-48 text-gray-400 dark:text-gray-500">
-            Gráfico de histórico será implementado aqui
-          </div>
-        </motion.div>
-      </div>
-    </motion.div>
-  );
+  addNotification: (notification: { title: string; message: string; date: string; type: 'bill' | 'reminder' | 'system' }) => void;
 }
 
 interface Stat {
@@ -206,6 +95,132 @@ function StatCard({ stat, index, onMoneyChange }: StatCardProps) {
           {stat.formattedValue}
         </p>
       )}
+    </motion.div>
+  );
+}
+
+export default function Dashboard({
+  availableMoney,
+  totalBills,
+  totalPaid,
+  balance,
+  paidBillsCount,
+  totalBillsCount,
+  onMoneyChange,
+  darkMode,
+  addNotification
+}: DashboardProps) {
+  const stats: Stat[] = [
+    {
+      title: 'Saldo Disponível',
+      value: availableMoney,
+      formattedValue: `R$ ${availableMoney.toFixed(2)}`,
+      icon: Wallet,
+      color: 'green',
+      trend: 'up' as const,
+      change: '+12%',
+      isInput: true
+    },
+    {
+      title: 'Total de Contas',
+      value: totalBills,
+      formattedValue: `R$ ${totalBills.toFixed(2)}`,
+      icon: CreditCard,
+      color: 'blue',
+      trend: 'neutral' as const,
+      change: `${totalBillsCount} contas`
+    },
+    {
+      title: 'Contas Pagas',
+      value: totalPaid,
+      formattedValue: `R$ ${totalPaid.toFixed(2)}`,
+      icon: TrendingUp,
+      color: 'green',
+      trend: 'up',
+      change: `${paidBillsCount} de ${totalBillsCount}`
+    },
+    {
+      title: 'Saldo Final',
+      value: balance,
+      formattedValue: `R$ ${balance.toFixed(2)}`,
+      icon: balance >= 0 ? TrendingUp : TrendingDown,
+      color: balance >= 0 ? 'green' : 'red',
+      trend: balance >= 0 ? 'up' as const : 'down' as const,
+      change: balance >= 0 ? 'Positivo' : 'Negativo'
+    }
+  ];
+
+  // Adicionar notificação quando o saldo for negativo
+  React.useEffect(() => {
+    if (balance < 0) {
+      addNotification({
+        title: 'Saldo Negativo',
+        message: 'Seu saldo final está negativo. Revise suas despesas.',
+        date: new Date().toISOString(),
+        type: 'system'
+      });
+    }
+  }, [balance, addNotification]);
+
+  return (
+    <motion.div
+      className="space-y-6"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+    >
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          Dashboard Financeiro
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400">
+          Visão geral das suas finanças e contas
+        </p>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat, index) => (
+          <StatCard
+            key={stat.title}
+            stat={stat}
+            index={index}
+            darkMode={darkMode}
+            onMoneyChange={onMoneyChange}
+          />
+        ))}
+      </div>
+
+      {/* Charts Placeholder */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <motion.div
+          className="card-modern h-80"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Despesas por Categoria
+          </h3>
+          <div className="flex items-center justify-center h-48 text-gray-400 dark:text-gray-500">
+            Gráfico de categorias será implementado aqui
+          </div>
+        </motion.div>
+
+        <motion.div
+          className="card-modern h-80"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.6 }}
+        >
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Histórico de Pagamentos
+          </h3>
+          <div className="flex items-center justify-center h-48 text-gray-400 dark:text-gray-500">
+            Gráfico de histórico será implementado aqui
+          </div>
+        </motion.div>
+      </div>
     </motion.div>
   );
 }

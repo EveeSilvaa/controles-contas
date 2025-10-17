@@ -11,159 +11,11 @@ interface Bill {
   category: string;
 }
 
-export interface BillsManagerProps {
+interface BillsManagerProps {
   bills: Bill[];
   setBills: React.Dispatch<React.SetStateAction<Bill[]>>;
   darkMode: boolean;
-  addNotification: (notification: Omit<Notification, 'id' | 'read'>) => void;
-}
-
-export default function BillsManager({ bills, setBills}: BillsManagerProps) {
-  const [newBill, setNewBill] = useState<Omit<Bill, 'id'>>({
-    name: '',
-    amount: 0,
-    dueDate: '',
-    paid: false,
-    category: 'outros'
-  });
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const addBill = () => {
-    if (newBill.name && newBill.amount > 0 && newBill.dueDate) {
-      const bill: Bill = {
-        ...newBill,
-        id: Date.now().toString(),
-      };
-      setBills([...bills, bill]);
-      setNewBill({
-        name: '',
-        amount: 0,
-        dueDate: '',
-        paid: false,
-        category: 'outros'
-      });
-      setShowAddForm(false);
-    }
-  };
-
-  const togglePaid = (id: string) => {
-    setBills(bills.map(bill => 
-      bill.id === id ? { ...bill, paid: !bill.paid } : bill
-    ));
-  };
-
-  const deleteBill = (id: string) => {
-    setBills(bills.filter(bill => bill.id !== id));
-  };
-
-  const filteredBills = bills.filter(bill =>
-    bill.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const categories = [
-    { value: 'casa', label: 'Casa' },
-    { value: 'transporte', label: 'Transporte' },
-    { value: 'alimentacao', label: 'Alimentação' },
-    { value: 'saude', label: 'Saúde' },
-    { value: 'educacao', label: 'Educação' },
-    { value: 'lazer', label: 'Lazer' },
-    { value: 'outros', label: 'Outros' },
-  ];
-
-  return (
-    <motion.div
-      className="space-y-6"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-    >
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Gerenciar Contas
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Adicione e gerencie suas contas e despesas
-          </p>
-        </div>
-
-        <motion.button
-          onClick={() => setShowAddForm(true)}
-          className="btn-primary flex items-center gap-2"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <Plus className="w-5 h-5" />
-          Nova Conta
-        </motion.button>
-      </div>
-
-      {/* Barra de pesquisa e filtros */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Pesquisar contas..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="input-modern pl-10 w-full"
-          />
-        </div>
-        <button className="btn-secondary flex items-center gap-2">
-          <Filter className="w-4 h-4" />
-          Filtros
-        </button>
-      </div>
-
-      {/* Lista de contas */}
-      <div className="grid gap-4">
-        <AnimatePresence>
-          {filteredBills.map((bill, index) => (
-            <BillItem
-              key={bill.id}
-              bill={bill}
-              index={index}
-              onTogglePaid={togglePaid}
-              onDelete={deleteBill}
-            />
-          ))}
-        </AnimatePresence>
-
-        {filteredBills.length === 0 && (
-          <motion.div
-            className="card-modern text-center py-12"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <div className="w-16 h-16 bg-gray-100 dark:bg-dark-700 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FileText className="w-8 h-8 text-gray-400" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              Nenhuma conta encontrada
-            </h3>
-            <p className="text-gray-500 dark:text-gray-400">
-              {searchTerm ? 'Tente ajustar sua pesquisa' : 'Adicione sua primeira conta para começar'}
-            </p>
-          </motion.div>
-        )}
-      </div>
-
-      {/* Modal de adicionar conta */}
-      <AnimatePresence>
-        {showAddForm && (
-          <AddBillForm
-            newBill={newBill}
-            setNewBill={setNewBill}
-            onAdd={addBill}
-            onClose={() => setShowAddForm(false)}
-            categories={categories}
-          />
-        )}
-      </AnimatePresence>
-    </motion.div>
-  );
+  addNotification: (notification: { title: string; message: string; date: string; type: 'bill' | 'reminder' | 'system' }) => void;
 }
 
 interface BillItemProps {
@@ -171,6 +23,14 @@ interface BillItemProps {
   index: number;
   onTogglePaid: (id: string) => void;
   onDelete: (id: string) => void;
+}
+
+interface AddBillFormProps {
+  newBill: Omit<Bill, 'id'>;
+  setNewBill: React.Dispatch<React.SetStateAction<Omit<Bill, 'id'>>>;
+  onAdd: () => void;
+  onClose: () => void;
+  categories: { value: string; label: string }[];
 }
 
 function BillItem({ bill, index, onTogglePaid, onDelete }: BillItemProps) {
@@ -254,13 +114,6 @@ function BillItem({ bill, index, onTogglePaid, onDelete }: BillItemProps) {
     </motion.div>
   );
 }
-interface AddBillFormProps {
-  newBill: Omit<Bill, 'id'>;
-  setNewBill: React.Dispatch<React.SetStateAction<Omit<Bill, 'id'>>>;
-  onAdd: () => void;
-  onClose: () => void;
-  categories: { value: string; label: string }[];
-}
 
 function AddBillForm({ newBill, setNewBill, onAdd, onClose, categories }: AddBillFormProps) {
   const isFormValid = newBill.name && newBill.amount > 0 && newBill.dueDate;
@@ -284,7 +137,7 @@ function AddBillForm({ newBill, setNewBill, onAdd, onClose, categories }: AddBil
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-dark-700 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
             <span className="text-2xl text-gray-500 dark:text-gray-400">×</span>
           </button>
@@ -366,6 +219,185 @@ function AddBillForm({ newBill, setNewBill, onAdd, onClose, categories }: AddBil
           </div>
         </div>
       </motion.div>
+    </motion.div>
+  );
+}
+
+export default function BillsManager({ bills, setBills, addNotification }: BillsManagerProps) {
+  const [newBill, setNewBill] = useState<Omit<Bill, 'id'>>({
+    name: '',
+    amount: 0,
+    dueDate: '',
+    paid: false,
+    category: 'outros'
+  });
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const addBill = () => {
+    if (newBill.name && newBill.amount > 0 && newBill.dueDate) {
+      const bill: Bill = {
+        ...newBill,
+        id: Date.now().toString(),
+      };
+      setBills([...bills, bill]);
+      
+      // Adicionar notificação
+      addNotification({
+        title: 'Nova Conta Adicionada',
+        message: `Conta "${newBill.name}" de R$ ${newBill.amount.toFixed(2)} foi adicionada.`,
+        date: new Date().toISOString(),
+        type: 'bill'
+      });
+      
+      setNewBill({
+        name: '',
+        amount: 0,
+        dueDate: '',
+        paid: false,
+        category: 'outros'
+      });
+      setShowAddForm(false);
+    }
+  };
+
+  const togglePaid = (id: string) => {
+    const bill = bills.find(b => b.id === id);
+    setBills(bills.map(bill => 
+      bill.id === id ? { ...bill, paid: !bill.paid } : bill
+    ));
+
+    // Adicionar notificação quando marcar como paga
+    if (bill && !bill.paid) {
+      addNotification({
+        title: 'Conta Marcada como Paga',
+        message: `Conta "${bill.name}" foi marcada como paga.`,
+        date: new Date().toISOString(),
+        type: 'bill'
+      });
+    }
+  };
+
+  const deleteBill = (id: string) => {
+    const bill = bills.find(b => b.id === id);
+    setBills(bills.filter(bill => bill.id !== id));
+
+    // Adicionar notificação ao deletar
+    if (bill) {
+      addNotification({
+        title: 'Conta Removida',
+        message: `Conta "${bill.name}" foi removida.`,
+        date: new Date().toISOString(),
+        type: 'bill'
+      });
+    }
+  };
+
+  const filteredBills = bills.filter(bill =>
+    bill.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const categories = [
+    { value: 'casa', label: 'Casa' },
+    { value: 'transporte', label: 'Transporte' },
+    { value: 'alimentacao', label: 'Alimentação' },
+    { value: 'saude', label: 'Saúde' },
+    { value: 'educacao', label: 'Educação' },
+    { value: 'lazer', label: 'Lazer' },
+    { value: 'outros', label: 'Outros' },
+  ];
+
+  return (
+    <motion.div
+      className="space-y-6"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+    >
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Gerenciar Contas
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Adicione e gerencie suas contas e despesas
+          </p>
+        </div>
+
+        <motion.button
+          onClick={() => setShowAddForm(true)}
+          className="btn-primary flex items-center gap-2"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <Plus className="w-5 h-5" />
+          Nova Conta
+        </motion.button>
+      </div>
+
+      {/* Barra de pesquisa e filtros */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Pesquisar contas..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="input-modern pl-10 w-full"
+          />
+        </div>
+        <button className="btn-secondary flex items-center gap-2">
+          <Filter className="w-4 h-4" />
+          Filtros
+        </button>
+      </div>
+
+      {/* Lista de contas */}
+      <div className="grid gap-4">
+        <AnimatePresence>
+          {filteredBills.map((bill, index) => (
+            <BillItem
+              key={bill.id}
+              bill={bill}
+              index={index}
+              onTogglePaid={togglePaid}
+              onDelete={deleteBill}
+            />
+          ))}
+        </AnimatePresence>
+
+        {filteredBills.length === 0 && (
+          <motion.div
+            className="card-modern text-center py-12"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FileText className="w-8 h-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              Nenhuma conta encontrada
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400">
+              {searchTerm ? 'Tente ajustar sua pesquisa' : 'Adicione sua primeira conta para começar'}
+            </p>
+          </motion.div>
+        )}
+      </div>
+
+      {/* Modal de adicionar conta */}
+      <AnimatePresence>
+        {showAddForm && (
+          <AddBillForm
+            newBill={newBill}
+            setNewBill={setNewBill}
+            onAdd={addBill}
+            onClose={() => setShowAddForm(false)}
+            categories={categories}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
