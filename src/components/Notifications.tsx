@@ -1,16 +1,14 @@
-// src/components/Notifications.tsx
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Bell, Check, Trash2, AlertCircle, Info, Calendar } from 'lucide-react';
 import type { Notification } from '../App';
 
-interface NotificationsProps {
+export interface NotificationsProps {
   notifications: Notification[];
-  setNotifications: (notifications: Notification[]) => void;
+  setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
   darkMode: boolean;
-  addNotification: (notification: Omit<Notification, 'id' | 'read'>) => void;
+  addNotification?: (notification: Omit<Notification, 'id' | 'read'>) => void;
 }
-
 
 
 export default function Notifications({ notifications, setNotifications, darkMode }: NotificationsProps) {

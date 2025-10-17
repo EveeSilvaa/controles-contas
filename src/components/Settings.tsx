@@ -1,4 +1,3 @@
-// src/components/Settings.tsx
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Sun, Moon, Bell, Download, Upload, Trash2, User, Shield, HelpCircle } from 'lucide-react';

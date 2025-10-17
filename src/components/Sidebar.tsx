@@ -1,4 +1,3 @@
-// src/components/Sidebar.tsx
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Home, 
@@ -57,7 +56,7 @@ export default function Sidebar({
       <motion.div
         className={`fixed lg:static h-screen z-50 ${
           darkMode 
-            ? 'bg-pink-900 border-r border-pink-700' 
+            ? 'bg-gray-900/10 border-r border-pink-500' 
             : 'bg-white border-r border-baby-200'
         } shadow-xl transition-all duration-300 ${
           sidebarOpen ? 'w-64' : 'w-20'
@@ -67,7 +66,7 @@ export default function Sidebar({
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
         {/* Header do Sidebar */}
-        <div className="p-4 border-b border-baby-200 dark:border-pink-700">
+        <div className="p-4 border-b border-baby-200 dark:border-pink-400">
           <div className="flex items-center justify-between">
             <AnimatePresence>
               {sidebarOpen && (

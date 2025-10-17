@@ -1,4 +1,3 @@
-// src/components/Analytics.tsx
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, PieChart, BarChart3, Calendar, Download } from 'lucide-react';
 

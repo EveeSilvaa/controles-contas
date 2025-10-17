@@ -1,4 +1,3 @@
-// src/components/Header.tsx
 import { motion } from 'framer-motion';
 import { Search, User, Menu, Bell, Sun, Moon, LogOut, Settings, Calculator } from 'lucide-react';
 import { useState } from 'react';
@@ -30,7 +29,7 @@ export default function Header({
 
   return (
     <header className={`
-      w-full bg-white dark:bg-pink-900 shadow-sm border-b border-baby-200 dark:border-pink-700 z-30
+      w-full bg-white dark:bg-gray-900/10 shadow-sm border-b border-baby-200 dark:border-pink-400 z-30
     `}>
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
@@ -51,7 +50,7 @@ export default function Header({
               <input
                 type="text"
                 placeholder="Pesquisar contas, transações..."
-                className="w-full pl-10 pr-4 py-2 border border-baby-300 dark:border-pink-600 rounded-lg bg-white dark:bg-pink-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-400 dark:focus:ring-pink-500 focus:border-transparent transition-all"
+                className="w-full pl-10 pr-4 py-2 border border-baby-300 dark:border-pink-400 rounded-lg bg-white dark:bg-pink-100 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-400 dark:focus:ring-pink-500 focus:border-transparent transition-all"
               />
             </div>
           </div>

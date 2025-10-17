@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Wallet, CreditCard } from 'lucide-react';
 
-interface DashboardProps {
+export interface DashboardProps {
   availableMoney: number;
   totalBills: number;
   totalPaid: number;
@@ -10,6 +10,7 @@ interface DashboardProps {
   totalBillsCount: number;
   onMoneyChange: (amount: number) => void;
   darkMode: boolean;
+  addNotification: (notification: Omit<Notification, 'id' | 'read'>) => void;
 }
 
 export default function Dashboard({

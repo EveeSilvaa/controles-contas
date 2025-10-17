@@ -11,7 +11,7 @@ interface Bill {
   category: string;
 }
 
-interface BillsManagerProps {
+export interface BillsManagerProps {
   bills: Bill[];
   setBills: React.Dispatch<React.SetStateAction<Bill[]>>;
   darkMode: boolean;

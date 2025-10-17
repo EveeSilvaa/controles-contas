@@ -1,15 +1,19 @@
-// src/components/Calendar.tsx
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Plus, Trash2, CheckCircle, Circle } from 'lucide-react';
 import type { Reminder, Bill } from '../App';
 
-interface CalendarProps {
+export interface CalendarProps {
   reminders: Reminder[];
-  setReminders: (reminders: Reminder[]) => void;
+  setReminders: React.Dispatch<React.SetStateAction<Reminder[]>>;
   bills: Bill[];
   darkMode: boolean;
-  addNotification: (notification: { title: string; message: string; date: string; type: string }) => void;
+  addNotification: (notification: { 
+    title: string; 
+    message: string; 
+    date: string; 
+    type: 'bill' | 'reminder' | 'system';
+  }) => void;
 }
 
 export default function Calendar({ reminders, setReminders, bills, darkMode, addNotification }: CalendarProps) {
