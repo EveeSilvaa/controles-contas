@@ -49,7 +49,7 @@ export default function Sidebar({
 
   return (
     <>
-      {/* Overlay para mobile */}
+      {/* Overlay para mobile  */}
       <AnimatePresence>
         {sidebarOpen && (
           <motion.div
@@ -62,7 +62,7 @@ export default function Sidebar({
         )}
       </AnimatePresence>
 
-      {/* Sidebar - POSIÇÃO FIXA  */}
+      {/* Sidebar  Sempre visível no desktop */}
       <motion.div
         className={`fixed lg:static h-screen z-50 ${
           darkMode 
@@ -72,11 +72,14 @@ export default function Sidebar({
           sidebarOpen ? 'w-64' : 'w-20'
         }`}
         initial={{ x: -300 }}
-        animate={{ x: sidebarOpen ? 0 : -300 }}
+        animate={{ 
+          x: 0,
+          // No mobile: sidebar fica escondido por padrão
+          // No desktop: sidebar sempre visível
+          transform: window.innerWidth >= 1024 ? 'translateX(0)' : (sidebarOpen ? 'translateX(0)' : 'translateX(-100%)')
+        }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        // No mobile, sidebar fica escondido por padrão
         style={{ 
-          transform: sidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
           backdropFilter: 'blur(10px)'
         }}
       >
@@ -165,11 +168,6 @@ export default function Sidebar({
             })}
           </ul>
         </nav>
-
-        {/* Footer do Sidebar */}
-        <div className="absolute bottom-6 left-4 right-4">
-          {/* Seu conteúdo do footer aqui */}
-        </div>
       </motion.div>
     </>
   );

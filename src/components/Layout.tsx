@@ -90,7 +90,7 @@ export default function Layout({
         {/* Conteúdo principal */}
         <div className={`
           flex-1 flex flex-col transition-all duration-300 min-w-0
-          ${sidebarOpen ? 'lg:ml-64' : 'lg:ml-20'}
+          ${sidebarOpen ? 'lg:ml-54' : 'lg:ml-30'}
         `}>
           <Header 
             sidebarOpen={sidebarOpen}

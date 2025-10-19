@@ -1,6 +1,7 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, Wallet, Calendar, Plus } from 'lucide-react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { TrendingUp, TrendingDown, Wallet, Calendar, Plus, X } from 'lucide-react';
 
 interface DashboardProps {
   availableMoney: number;
@@ -15,6 +16,7 @@ interface DashboardProps {
   futureBalance: number;
   onFutureBalanceChange: (amount: number) => void;
   futureTransactions: FutureTransaction[];
+  onAddFutureTransaction: (transaction: Omit<FutureTransaction, 'id'>) => void;
 }
 
 interface FutureTransaction {
@@ -43,6 +45,139 @@ interface StatCardProps {
   darkMode: boolean;
   onMoneyChange?: (amount: number) => void;
   onFutureBalanceChange?: (amount: number) => void;
+}
+
+// Modal para adicionar transação futura
+function AddFutureTransactionModal({ 
+  isOpen, 
+  onClose, 
+  onAdd,
+  darkMode 
+}: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+  onAdd: (transaction: Omit<FutureTransaction, 'id'>) => void;
+  darkMode: boolean;
+}) {
+  const [formData, setFormData] = useState({
+    description: '',
+    amount: '',
+    expectedDate: '',
+    received: false
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formData.description && formData.amount && formData.expectedDate) {
+      onAdd({
+        description: formData.description,
+        amount: parseFloat(formData.amount),
+        expectedDate: formData.expectedDate,
+        received: formData.received
+      });
+      setFormData({ description: '', amount: '', expectedDate: '', received: false });
+      onClose();
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className={`w-full max-w-md rounded-2xl p-6 ${
+          darkMode ? 'bg-gray-800' : 'bg-white'
+        }`}
+      >
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+            Nova Transação Futura
+          </h3>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          >
+            <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Descrição
+            </label>
+            <input
+              type="text"
+              value={formData.description}
+              onChange={(e) => setFormData({...formData, description: e.target.value})}
+              className="input-modern w-full"
+              placeholder="Ex: Salário, Freelance, Bônus..."
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Valor (R$)
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              value={formData.amount}
+              onChange={(e) => setFormData({...formData, amount: e.target.value})}
+              className="input-modern w-full"
+              placeholder="0.00"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Data Esperada
+            </label>
+            <input
+              type="date"
+              value={formData.expectedDate}
+              onChange={(e) => setFormData({...formData, expectedDate: e.target.value})}
+              className="input-modern w-full"
+              required
+            />
+          </div>
+
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              id="received"
+              checked={formData.received}
+              onChange={(e) => setFormData({...formData, received: e.target.checked})}
+              className="w-4 h-4 text-pink-500 rounded focus:ring-pink-400"
+            />
+            <label htmlFor="received" className="text-sm text-gray-700 dark:text-gray-300">
+              Já recebido?
+            </label>
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 btn-secondary"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="flex-1 btn-primary"
+            >
+              Adicionar
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </div>
+  );
 }
 
 function StatCard({ stat, index, onMoneyChange, onFutureBalanceChange }: StatCardProps) {
@@ -125,8 +260,10 @@ export default function Dashboard({
   addNotification,
   futureBalance,
   onFutureBalanceChange,
-  futureTransactions = []
+  futureTransactions = [],
+  onAddFutureTransaction
 }: DashboardProps) {
+  const [showAddModal, setShowAddModal] = useState(false);
   const totalFutureBalance = availableMoney + futureBalance;
   
   const stats: Stat[] = [
@@ -182,6 +319,16 @@ export default function Dashboard({
     }
   }, [balance, addNotification]);
 
+  const handleAddTransaction = (transaction: Omit<FutureTransaction, 'id'>) => {
+    onAddFutureTransaction(transaction);
+    addNotification({
+      title: 'Transação Futura Adicionada',
+      message: `${transaction.description} de R$ ${transaction.amount.toFixed(2)} foi adicionada.`,
+      date: new Date().toISOString(),
+      type: 'system'
+    });
+  };
+
   return (
     <motion.div
       className="space-y-6"
@@ -227,12 +374,7 @@ export default function Dashboard({
             className="btn-primary flex items-center gap-2"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => addNotification({
-              title: 'Nova Transação',
-              message: 'Funcionalidade em desenvolvimento! Em breve você poderá adicionar transações futuras detalhadas.',
-              date: new Date().toISOString(),
-              type: 'system'
-            })}
+            onClick={() => setShowAddModal(true)}
           >
             <Plus className="w-4 h-4" />
             Adicionar
@@ -306,6 +448,18 @@ export default function Dashboard({
           </div>
         )}
       </motion.div>
+
+      {/* Modal para adicionar transação futura */}
+      <AnimatePresence>
+        {showAddModal && (
+          <AddFutureTransactionModal
+            isOpen={showAddModal}
+            onClose={() => setShowAddModal(false)}
+            onAdd={handleAddTransaction}
+            darkMode={darkMode}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Charts Placeholder */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

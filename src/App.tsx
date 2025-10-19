@@ -209,6 +209,13 @@ export default function App() {
             futureBalance={futureBalance}
             onFutureBalanceChange={setFutureBalance}
             futureTransactions={futureTransactions}
+            onAddFutureTransaction={(transaction: Omit<FutureTransaction, "id">) => {
+              const newTransaction: FutureTransaction = {
+                ...transaction,
+                id: Date.now().toString(),
+              };
+              setFutureTransactions(prev => [...prev, newTransaction]);
+            }}
           />
         )}
 
