@@ -1,4 +1,3 @@
-// src/components/Calendar.tsx
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Plus, Trash2, CheckCircle, Circle } from 'lucide-react';

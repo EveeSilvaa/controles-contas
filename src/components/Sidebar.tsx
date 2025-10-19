@@ -49,7 +49,7 @@ export default function Sidebar({
 
   return (
     <>
-      {/* Overlay para mobile - MELHORADO */}
+      {/* Overlay para mobile */}
       <AnimatePresence>
         {sidebarOpen && (
           <motion.div
@@ -62,7 +62,7 @@ export default function Sidebar({
         )}
       </AnimatePresence>
 
-      {/* Sidebar - POSIÇÃO FIXA MELHORADA */}
+      {/* Sidebar - POSIÇÃO FIXA  */}
       <motion.div
         className={`fixed lg:static h-screen z-50 ${
           darkMode 

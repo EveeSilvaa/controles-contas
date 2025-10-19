@@ -5,37 +5,33 @@ import Calculator from './Calculator';
 import Footer from './Footer';
 
 interface User {
+  id: string;
   nome: string;
   email: string;
   celular: string;
 }
 
-interface LayoutSCProps {
+interface LayoutProps {
   children: React.ReactNode;
   activeSection: string;
   onSectionChange: (section: string) => void;
   darkMode: boolean;
   setDarkMode: (darkMode: boolean) => void;
+  user?: User;
+  onLogout?: () => void;
 }
 
-export default function Layout({
-  children,
-  activeSection,
-  onSectionChange,
-  darkMode,
-  setDarkMode
-}: LayoutSCProps) {
-  const [user, setUser] = useState<User | null>(null);
+export default function Layout({ 
+  children, 
+  activeSection, 
+  onSectionChange, 
+  darkMode, 
+  setDarkMode,
+  user,
+  onLogout
+}: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [calculatorOpen, setCalculatorOpen] = useState(false);
-
-  useEffect(() => {
-    setUser({
-      nome: 'Usuário Financeiro',
-      email: 'usuario@finance.com',
-      celular: '(11) 99999-9999'
-    });
-  }, []);
 
   useEffect(() => {
     if (darkMode) {
@@ -45,40 +41,43 @@ export default function Layout({
     }
   }, [darkMode]);
 
-  const handleLogout = () => {
-    console.log('Logout realizado');
-  };
-
+  // Fechar sidebar no mobile quando redimensionar para desktop
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 1024) { // lg breakpoint
+      if (window.innerWidth >= 1024) {
         setSidebarOpen(true);
       } else {
         setSidebarOpen(false);
       }
     };
 
-    // Adiciona listener
     window.addEventListener('resize', handleResize);
-
-    // Chama uma vez para definir estado inicial
     handleResize();
 
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-baby-50 dark:bg-gray-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-pink-400"></div>
-      </div>
-    );
-  }
+  const defaultUser: User = {
+    id: '1',
+    nome: 'Usuário Financeiro',
+    email: 'usuario@finance.com',
+    celular: '(11) 99999-9999'
+  };
+
+  const currentUser = user || defaultUser;
+
+  const handleLogout = () => {
+    if (onLogout) {
+      onLogout();
+    } else {
+      console.log('Logout realizado');
+    }
+  };
 
   return (
     <>
       <div className="flex h-screen bg-baby-50 dark:bg-gray-900 overflow-hidden">
-        <Sidebar
+        <Sidebar 
           activeSection={activeSection}
           onSectionChange={onSectionChange}
           darkMode={darkMode}
@@ -87,23 +86,23 @@ export default function Layout({
           onSidebarToggle={() => setSidebarOpen(!sidebarOpen)}
           setSidebarOpen={setSidebarOpen}
         />
-
+        
         {/* Conteúdo principal */}
         <div className={`
           flex-1 flex flex-col transition-all duration-300 min-w-0
-          ${sidebarOpen ? 'lg:ml-54' : 'lg:ml-30'}
+          ${sidebarOpen ? 'lg:ml-64' : 'lg:ml-20'}
         `}>
-          <Header
+          <Header 
             sidebarOpen={sidebarOpen}
             setSidebarOpen={setSidebarOpen}
-            user={user}
+            user={currentUser}
             handleLogout={handleLogout}
             darkMode={darkMode}
             setDarkMode={setDarkMode}
             onCalculatorToggle={() => setCalculatorOpen(!calculatorOpen)}
           />
           <Footer />
-
+          
           <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-gradient-to-br from-baby-50 via-white to-pink-50 dark:from-gray-900 dark:via-pink-900/20 dark:to-gray-800">
             <div className="max-w-7xl mx-auto w-full">
               {children}
@@ -112,14 +111,12 @@ export default function Layout({
         </div>
 
         {/* Calculadora Flutuante */}
-        <Calculator
+        <Calculator 
           isOpen={calculatorOpen}
           onClose={() => setCalculatorOpen(false)}
           darkMode={darkMode}
         />
       </div>
-
     </>
   );
-
 }
