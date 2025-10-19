@@ -18,12 +18,12 @@ interface LayoutSCProps {
   setDarkMode: (darkMode: boolean) => void;
 }
 
-export default function Layout({ 
-  children, 
-  activeSection, 
-  onSectionChange, 
-  darkMode, 
-  setDarkMode 
+export default function Layout({
+  children,
+  activeSection,
+  onSectionChange,
+  darkMode,
+  setDarkMode
 }: LayoutSCProps) {
   const [user, setUser] = useState<User | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -49,6 +49,24 @@ export default function Layout({
     console.log('Logout realizado');
   };
 
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) { // lg breakpoint
+        setSidebarOpen(true);
+      } else {
+        setSidebarOpen(false);
+      }
+    };
+
+    // Adiciona listener
+    window.addEventListener('resize', handleResize);
+
+    // Chama uma vez para definir estado inicial
+    handleResize();
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-baby-50 dark:bg-gray-900">
@@ -60,7 +78,7 @@ export default function Layout({
   return (
     <>
       <div className="flex h-screen bg-baby-50 dark:bg-gray-900 overflow-hidden">
-        <Sidebar 
+        <Sidebar
           activeSection={activeSection}
           onSectionChange={onSectionChange}
           darkMode={darkMode}
@@ -69,13 +87,13 @@ export default function Layout({
           onSidebarToggle={() => setSidebarOpen(!sidebarOpen)}
           setSidebarOpen={setSidebarOpen}
         />
-        
+
         {/* Conteúdo principal */}
         <div className={`
           flex-1 flex flex-col transition-all duration-300 min-w-0
           ${sidebarOpen ? 'lg:ml-54' : 'lg:ml-30'}
         `}>
-          <Header 
+          <Header
             sidebarOpen={sidebarOpen}
             setSidebarOpen={setSidebarOpen}
             user={user}
@@ -85,7 +103,7 @@ export default function Layout({
             onCalculatorToggle={() => setCalculatorOpen(!calculatorOpen)}
           />
           <Footer />
-          
+
           <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-gradient-to-br from-baby-50 via-white to-pink-50 dark:from-gray-900 dark:via-pink-900/20 dark:to-gray-800">
             <div className="max-w-7xl mx-auto w-full">
               {children}
@@ -94,7 +112,7 @@ export default function Layout({
         </div>
 
         {/* Calculadora Flutuante */}
-        <Calculator 
+        <Calculator
           isOpen={calculatorOpen}
           onClose={() => setCalculatorOpen(false)}
           darkMode={darkMode}
@@ -103,4 +121,5 @@ export default function Layout({
 
     </>
   );
+
 }

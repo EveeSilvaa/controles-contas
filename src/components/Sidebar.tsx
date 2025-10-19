@@ -37,9 +37,19 @@ export default function Sidebar({
     { id: 'settings', label: 'Configurações', icon: Settings },
   ];
 
+  // Função para lidar com clique nos itens do menu (fecha sidebar no mobile)
+  const handleMenuClick = (sectionId: string) => {
+    onSectionChange(sectionId);
+    
+    // Fecha sidebar automaticamente no mobile
+    if (window.innerWidth < 1024) { // lg breakpoint
+      onSidebarToggle();
+    }
+  };
+
   return (
     <>
-      {/* Overlay para mobile */}
+      {/* Overlay para mobile - MELHORADO */}
       <AnimatePresence>
         {sidebarOpen && (
           <motion.div
@@ -52,18 +62,23 @@ export default function Sidebar({
         )}
       </AnimatePresence>
 
-      {/* Sidebar */}
+      {/* Sidebar - POSIÇÃO FIXA MELHORADA */}
       <motion.div
         className={`fixed lg:static h-screen z-50 ${
           darkMode 
-            ? 'bg-gray-900/10 border-r border-pink-500' 
-            : 'bg-white border-r border-baby-200'
+            ? 'bg-gray-900/95 border-r border-pink-500' 
+            : 'bg-white/95 border-r border-baby-200'
         } shadow-xl transition-all duration-300 ${
           sidebarOpen ? 'w-64' : 'w-20'
         }`}
         initial={{ x: -300 }}
-        animate={{ x: 0 }}
+        animate={{ x: sidebarOpen ? 0 : -300 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        // No mobile, sidebar fica escondido por padrão
+        style={{ 
+          transform: sidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
+          backdropFilter: 'blur(10px)'
+        }}
       >
         {/* Header do Sidebar */}
         <div className="p-4 border-b border-baby-200 dark:border-pink-400">
@@ -91,7 +106,7 @@ export default function Sidebar({
               )}
             </AnimatePresence>
             
-            {/* Botão de toggle do sidebar */}
+            {/* Botão de toggle do sidebar - SEMPRE VISÍVEL */}
             <motion.button
               onClick={onSidebarToggle}
               className={`p-2 rounded-lg ${
@@ -120,7 +135,7 @@ export default function Sidebar({
                   transition={{ delay: index * 0.1 }}
                 >
                   <button
-                    onClick={() => onSectionChange(item.id)}
+                    onClick={() => handleMenuClick(item.id)}
                     className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 ${
                       activeSection === item.id
                         ? 'bg-pink-500 text-white shadow-md'
@@ -153,66 +168,7 @@ export default function Sidebar({
 
         {/* Footer do Sidebar */}
         <div className="absolute bottom-6 left-4 right-4">
-          {/* Botão Calculadora
-          <motion.button
-            onClick={() => onSectionChange('calculator')}
-            className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 ${
-              darkMode
-                ? 'bg-pink-800 text-pink-200 hover:bg-pink-700'
-                : 'bg-baby-100 text-gray-700 hover:bg-baby-200'
-            } ${!sidebarOpen ? 'justify-center' : ''} mb-3`}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <Calculator className="w-5 h-5 flex-shrink-0" />
-            <AnimatePresence>
-              {sidebarOpen && (
-                <motion.span
-                  initial={{ opacity: 0, width: 0 }}
-                  animate={{ opacity: 1, width: 'auto' }}
-                  exit={{ opacity: 0, width: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="font-medium whitespace-nowrap"
-                >
-                  Calculadora
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </motion.button> */} 
-
-          {/* User Profile */}
-          {/* <motion.div
-            className={`p-3 rounded-xl ${
-              darkMode ? 'bg-pink-800' : 'bg-baby-100'
-            } ${!sidebarOpen ? 'flex justify-center' : ''}`}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-          >
-            <div className={`flex items-center ${!sidebarOpen ? 'justify-center' : 'gap-3'}`}>
-              <div className="w-8 h-8 bg-gradient-to-r from-pink-400 to-pink-500 rounded-full flex items-center justify-center">
-                <span className="text-white font-semibold text-xs">US</span>
-              </div>
-              <AnimatePresence>
-                {sidebarOpen && (
-                  <motion.div
-                    className="flex-1 min-w-0"
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: 'auto' }}
-                    exit={{ opacity: 0, width: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                      Usuário
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-pink-200 truncate">
-                      Premium
-                    </p>
-                  </motion.div>
-                )}
-              </AnimatePresence> */}
-            {/* </div>
-          </motion.div> */}
+          {/* Seu conteúdo do footer aqui */}
         </div>
       </motion.div>
     </>
