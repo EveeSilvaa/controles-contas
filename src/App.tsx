@@ -1,3 +1,4 @@
+// src/App.tsx
 import { useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import LoadingScreen from './components/LoadingScreen';
@@ -143,7 +144,9 @@ export default function App() {
   const totalBills = bills.reduce((sum, bill) => sum + bill.amount, 0);
   const paidBills = bills.filter(bill => bill.paid);
   const totalPaid = paidBills.reduce((sum, bill) => sum + bill.amount, 0);
-  const balance = availableMoney - totalBills + totalPaid;
+  
+  // SALDO FINAL AGORA INCLUI O SALDO FUTURO
+  const balance = availableMoney - totalBills + totalPaid + futureBalance;
 
   // Função para adicionar notificação
   const addNotification = (notification: Omit<Notification, 'id' | 'read'>) => {
@@ -176,6 +179,15 @@ export default function App() {
     setShowAuth(true);
   };
 
+  // Função para adicionar transação futura
+  const handleAddFutureTransaction = (transaction: Omit<FutureTransaction, 'id'>) => {
+    const newTransaction: FutureTransaction = {
+      ...transaction,
+      id: Date.now().toString()
+    };
+    setFutureTransactions(prev => [...prev, newTransaction]);
+  };
+
   if (isLoading) {
     return <LoadingScreen onLoadingComplete={() => setIsLoading(false)} />;
   }
@@ -192,7 +204,7 @@ export default function App() {
       darkMode={darkMode}
       setDarkMode={setDarkMode}
       user={user}
-      onLogout={handleLogout} // CORRIGIDO
+      onLogout={handleLogout}
     >
       <AnimatePresence mode="wait">
         {activeSection === 'dashboard' && (
@@ -209,13 +221,8 @@ export default function App() {
             futureBalance={futureBalance}
             onFutureBalanceChange={setFutureBalance}
             futureTransactions={futureTransactions}
-            onAddFutureTransaction={(transaction: Omit<FutureTransaction, "id">) => {
-              const newTransaction: FutureTransaction = {
-                ...transaction,
-                id: Date.now().toString(),
-              };
-              setFutureTransactions(prev => [...prev, newTransaction]);
-            }}
+            onAddFutureTransaction={handleAddFutureTransaction}
+            bills={bills}
           />
         )}
 

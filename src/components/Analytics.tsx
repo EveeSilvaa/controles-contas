@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { formatCurrency } from '../utils/formatters';
 import { TrendingUp, TrendingDown, PieChart, BarChart3, Calendar, Download } from 'lucide-react';
 
 interface AnalyticsProps {
@@ -63,7 +64,7 @@ export default function Analytics({ bills }: AnalyticsProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Gasto Total"
-          value={`R$ ${totalSpent.toLocaleString()}`}
+          value={`${formatCurrency(totalSpent)}`}
           change={analyticsData.spendingTrend}
           trend="up"
           icon={TrendingUp}
@@ -71,7 +72,7 @@ export default function Analytics({ bills }: AnalyticsProps) {
         />
         <StatCard
           title="Conta Média"
-          value={`R$ ${analyticsData.averageBill}`}
+          value={`${formatCurrency(Number(analyticsData.averageBill))}`}
           change="+5%"
           trend="up"
           icon={BarChart3}
@@ -131,7 +132,7 @@ export default function Analytics({ bills }: AnalyticsProps) {
                   </div>
                 </div>
                 <span className="text-sm font-semibold text-gray-900 dark:text-white w-20 text-right">
-                  R$ {item.amount}
+                  {formatCurrency(item.amount)}
                 </span>
               </div>
             ))}

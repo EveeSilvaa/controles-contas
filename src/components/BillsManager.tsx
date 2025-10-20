@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { formatInputCurrency, parseFormattedNumber } from '../utils/formatters';
 import { Plus, Search, Filter, Calendar, DollarSign, Trash2, CheckCircle, Clock, FileText } from 'lucide-react';
 
 interface Bill {
@@ -36,11 +37,10 @@ interface AddBillFormProps {
 function BillItem({ bill, index, onTogglePaid, onDelete }: BillItemProps) {
   return (
     <motion.div
-      className={`card-modern border-l-4 ${
-        bill.paid 
-          ? 'border-l-green-500 bg-green-50 dark:bg-green-900/10' 
-          : 'border-l-orange-500'
-      }`}
+      className={`card-modern border-l-4 ${bill.paid
+        ? 'border-l-green-500 bg-green-50 dark:bg-green-900/10'
+        : 'border-l-orange-500'
+        }`}
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9, x: -100 }}
@@ -50,11 +50,10 @@ function BillItem({ bill, index, onTogglePaid, onDelete }: BillItemProps) {
       <div className="flex justify-between items-start">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-3">
-            <div className={`p-2 rounded-lg ${
-              bill.paid 
-                ? 'bg-green-100 dark:bg-green-900/20' 
-                : 'bg-orange-100 dark:bg-orange-900/20'
-            }`}>
+            <div className={`p-2 rounded-lg ${bill.paid
+              ? 'bg-green-100 dark:bg-green-900/20'
+              : 'bg-orange-100 dark:bg-orange-900/20'
+              }`}>
               {bill.paid ? (
                 <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
               ) : (
@@ -62,11 +61,10 @@ function BillItem({ bill, index, onTogglePaid, onDelete }: BillItemProps) {
               )}
             </div>
             <div>
-              <h3 className={`font-semibold ${
-                bill.paid 
-                  ? 'text-green-700 dark:text-green-400 line-through' 
-                  : 'text-gray-900 dark:text-white'
-              }`}>
+              <h3 className={`font-semibold ${bill.paid
+                ? 'text-green-700 dark:text-green-400 line-through'
+                : 'text-gray-900 dark:text-white'
+                }`}>
                 {bill.name}
               </h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">
@@ -74,7 +72,7 @@ function BillItem({ bill, index, onTogglePaid, onDelete }: BillItemProps) {
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-6 text-sm">
             <span className="flex items-center gap-1 font-semibold text-gray-700 dark:text-gray-300">
               <DollarSign className="w-4 h-4" />
@@ -86,21 +84,20 @@ function BillItem({ bill, index, onTogglePaid, onDelete }: BillItemProps) {
             </span>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <motion.button
             onClick={() => onTogglePaid(bill.id)}
-            className={`p-2 rounded-lg transition-colors ${
-              bill.paid 
-                ? 'bg-green-100 text-green-600 hover:bg-green-200 dark:bg-green-900/20 dark:hover:bg-green-900/40' 
-                : 'bg-orange-100 text-orange-600 hover:bg-orange-200 dark:bg-orange-900/20 dark:hover:bg-orange-900/40'
-            }`}
+            className={`p-2 rounded-lg transition-colors ${bill.paid
+              ? 'bg-green-100 text-green-600 hover:bg-green-200 dark:bg-green-900/20 dark:hover:bg-green-900/40'
+              : 'bg-orange-100 text-orange-600 hover:bg-orange-200 dark:bg-orange-900/20 dark:hover:bg-orange-900/40'
+              }`}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
             {bill.paid ? <CheckCircle className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
           </motion.button>
-          
+
           <motion.button
             onClick={() => onDelete(bill.id)}
             className="p-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors dark:bg-red-900/20 dark:hover:bg-red-900/40"
@@ -116,8 +113,15 @@ function BillItem({ bill, index, onTogglePaid, onDelete }: BillItemProps) {
 }
 
 function AddBillForm({ newBill, setNewBill, onAdd, onClose, categories }: AddBillFormProps) {
-  const isFormValid = newBill.name && newBill.amount > 0 && newBill.dueDate;
+  const [amountInput, setAmountInput] = useState(formatInputCurrency(newBill.amount.toString()));
 
+  const handleAmountChange = (value: string) => {
+    setAmountInput(value);
+    const numericValue = parseFormattedNumber(value);
+    setNewBill({ ...newBill, amount: numericValue });
+  };
+
+  const isFormValid = newBill.name && newBill.amount > 0 && newBill.dueDate;
   return (
     <motion.div
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
@@ -152,7 +156,7 @@ function AddBillForm({ newBill, setNewBill, onAdd, onClose, categories }: AddBil
               type="text"
               placeholder="Ex: Aluguel, Luz, Internet..."
               value={newBill.name}
-              onChange={(e) => setNewBill({...newBill, name: e.target.value})}
+              onChange={(e) => setNewBill({ ...newBill, name: e.target.value })}
               className="input-modern"
             />
           </div>
@@ -163,7 +167,7 @@ function AddBillForm({ newBill, setNewBill, onAdd, onClose, categories }: AddBil
             </label>
             <select
               value={newBill.category}
-              onChange={(e) => setNewBill({...newBill, category: e.target.value})}
+              onChange={(e) => setNewBill({ ...newBill, category: e.target.value })}
               className="input-modern"
             >
               {categories.map((category) => (
@@ -176,15 +180,14 @@ function AddBillForm({ newBill, setNewBill, onAdd, onClose, categories }: AddBil
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Valor (R$)
+              Valor
             </label>
             <input
-              type="number"
-              placeholder="0.00"
-              value={newBill.amount || ''}
-              onChange={(e) => setNewBill({...newBill, amount: parseFloat(e.target.value) || 0})}
+              type="text"
+              placeholder="0,00"
+              value={amountInput}
+              onChange={(e) => handleAmountChange(e.target.value)}
               className="input-modern"
-              step="0.01"
             />
           </div>
 
@@ -195,7 +198,7 @@ function AddBillForm({ newBill, setNewBill, onAdd, onClose, categories }: AddBil
             <input
               type="date"
               value={newBill.dueDate}
-              onChange={(e) => setNewBill({...newBill, dueDate: e.target.value})}
+              onChange={(e) => setNewBill({ ...newBill, dueDate: e.target.value })}
               className="input-modern"
             />
           </div>
@@ -210,9 +213,8 @@ function AddBillForm({ newBill, setNewBill, onAdd, onClose, categories }: AddBil
             <button
               onClick={onAdd}
               disabled={!isFormValid}
-              className={`flex-1 btn-primary ${
-                !isFormValid ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+              className={`flex-1 btn-primary ${!isFormValid ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
             >
               Adicionar
             </button>
@@ -241,7 +243,7 @@ export default function BillsManager({ bills, setBills, addNotification }: Bills
         id: Date.now().toString(),
       };
       setBills([...bills, bill]);
-      
+
       // Adicionar notificação
       addNotification({
         title: 'Nova Conta Adicionada',
@@ -249,7 +251,7 @@ export default function BillsManager({ bills, setBills, addNotification }: Bills
         date: new Date().toISOString(),
         type: 'bill'
       });
-      
+
       setNewBill({
         name: '',
         amount: 0,
@@ -263,7 +265,7 @@ export default function BillsManager({ bills, setBills, addNotification }: Bills
 
   const togglePaid = (id: string) => {
     const bill = bills.find(b => b.id === id);
-    setBills(bills.map(bill => 
+    setBills(bills.map(bill =>
       bill.id === id ? { ...bill, paid: !bill.paid } : bill
     ));
 
