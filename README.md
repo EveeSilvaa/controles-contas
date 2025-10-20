@@ -54,7 +54,7 @@ Um aplicativo web moderno e intuitivo para controle financeiro pessoal, desenvol
 
 ```bash
 # Clone o repositório
-git clone https://github.com/seu-usuario/financeflow.git
+git clone https://github.com/EveeSilvaa/financeflow.git
 
 # Entre no diretório
 cd financeflow
