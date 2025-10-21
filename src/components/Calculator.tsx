@@ -10,6 +10,35 @@ interface CalculatorProps {
   darkMode: boolean;
 }
 
+function handleCalculatorInput(display: string, num: string): string {
+  // Remove formatação para trabalhar com o número
+  const cleanDisplay = display.replace(/\./g, '');
+  
+  // Se o display é "0,00", substitui pelo novo número
+  if (cleanDisplay === '0,00') {
+    return num + ',00';
+  }
+  
+  // Separa parte inteira e decimal
+  const [integerPart, decimalPart = ''] = cleanDisplay.split(',');
+  
+  // Se já tem 2 casas decimais, não adiciona mais
+  if (decimalPart.length >= 2) {
+    return display;
+  }
+  
+  // Se não tem parte decimal, adiciona o número à parte inteira
+  if (!cleanDisplay.includes(',')) {
+    const newInteger = integerPart + num;
+    return formatNumber(parseFloat(newInteger));
+  }
+  
+  // Se tem vírgula mas menos de 2 decimais, adiciona à parte decimal
+  const newDecimal = (decimalPart + num).slice(0, 2);
+  const newValue = parseFloat(integerPart + '.' + newDecimal.padEnd(2, '0'));
+  return formatNumber(newValue);
+}
+
 export default function Calculator({ isOpen, onClose, darkMode }: CalculatorProps) {
   const [display, setDisplay] = useState('0,00');
   const [previousValue, setPreviousValue] = useState<number | null>(null);
@@ -17,32 +46,26 @@ export default function Calculator({ isOpen, onClose, darkMode }: CalculatorProp
   const [waitingForNewValue, setWaitingForNewValue] = useState(false);
 
   const inputNumber = (num: string) => {
-    if (waitingForNewValue) {
-      setDisplay(num === '0' ? '0,00' : num + ',00');
-      setWaitingForNewValue(false);
-    } else {
-      const currentValue = display === '0,00' ? '' : display.replace(/\./g, '').replace(',', '');
-      const newValue = currentValue + num;
-
-      // Se o novo valor for apenas "0", mantém como "0,00"
-      if (newValue === '0') {
-        setDisplay('0,00');
-      } else {
-        const numericValue = parseInt(newValue, 10) / 100;
-        setDisplay(formatNumber(numericValue));
-      }
-    }
-  };
+  if (waitingForNewValue) {
+    setDisplay(num === '0' ? '0,00' : num + ',00');
+    setWaitingForNewValue(false);
+  } else {
+    // Usa a nova função de formatação
+    const newValue = handleCalculatorInput(display, num);
+    setDisplay(newValue);
+  }
+};
 
   const inputDecimal = () => {
-    if (waitingForNewValue) {
-      setDisplay('0,');
-      setWaitingForNewValue(false);
-    } else if (!display.includes(',')) {
-      // Se não tem vírgula, adiciona
-      setDisplay(display + ',');
-    }
-  };
+  if (waitingForNewValue) {
+    setDisplay('0,00');
+    setWaitingForNewValue(false);
+  } else if (!display.includes(',')) {
+    // Se não tem vírgula, adiciona mantendo os zeros decimais
+    const integerPart = display.replace(/\./g, '');
+    setDisplay(integerPart + ',00');
+  }
+};
   const clear = () => {
     setDisplay('0,00');
     setPreviousValue(null);
