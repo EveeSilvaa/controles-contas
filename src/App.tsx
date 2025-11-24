@@ -1,4 +1,3 @@
-// src/App.tsx
 import { useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import LoadingScreen from './components/LoadingScreen';
@@ -67,79 +66,118 @@ export default function App() {
   const [bills, setBills] = useState<Bill[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [availableMoney, setAvailableMoney] = useState<number>(5000);
+  const [availableMoney, setAvailableMoney] = useState<number>(0);
   const [futureBalance, setFutureBalance] = useState<number>(0);
   const [futureTransactions, setFutureTransactions] = useState<FutureTransaction[]>([]);
 
-  // Carregar dados do localStorage
-  useEffect(() => {
-    const savedUser = localStorage.getItem('financeFlowUser');
-    const savedBills = localStorage.getItem('bills');
-    const savedMoney = localStorage.getItem('availableMoney');
-    const savedTheme = localStorage.getItem('darkMode');
-    const savedReminders = localStorage.getItem('reminders');
-    const savedNotifications = localStorage.getItem('notifications');
-    const savedFutureBalance = localStorage.getItem('futureBalance');
-    const savedFutureTransactions = localStorage.getItem('futureTransactions');
-    const userLoggedIn = localStorage.getItem('userLoggedIn');
+  // Estado para controlar se estamos no client
+  const [isClient, setIsClient] = useState(false);
 
-    if (savedUser) setUser(JSON.parse(savedUser));
-    if (savedBills) setBills(JSON.parse(savedBills));
-    if (savedMoney) setAvailableMoney(parseFloat(savedMoney));
-    if (savedTheme) setDarkMode(JSON.parse(savedTheme));
-    if (savedReminders) setReminders(JSON.parse(savedReminders));
-    if (savedNotifications) setNotifications(JSON.parse(savedNotifications));
-    if (savedFutureBalance) setFutureBalance(parseFloat(savedFutureBalance));
-    if (savedFutureTransactions) setFutureTransactions(JSON.parse(savedFutureTransactions));
+  // Carregar dados do localStorage APENAS no client
+  useEffect(() => {
+    setIsClient(true);
     
-    // Se usuário estava logado, não mostrar tela de auth
-    if (userLoggedIn === 'true' && savedUser) {
-      setShowAuth(false);
+    try {
+      const savedUser = localStorage.getItem('financeFlowUser');
+      const savedBills = localStorage.getItem('bills');
+      const savedMoney = localStorage.getItem('availableMoney');
+      const savedTheme = localStorage.getItem('darkMode');
+      const savedReminders = localStorage.getItem('reminders');
+      const savedNotifications = localStorage.getItem('notifications');
+      const savedFutureBalance = localStorage.getItem('futureBalance');
+      const savedFutureTransactions = localStorage.getItem('futureTransactions');
+      const userLoggedIn = localStorage.getItem('userLoggedIn');
+
+      if (savedUser) setUser(JSON.parse(savedUser));
+      if (savedBills) setBills(JSON.parse(savedBills));
+      if (savedMoney) setAvailableMoney(parseFloat(savedMoney));
+      if (savedTheme) setDarkMode(JSON.parse(savedTheme));
+      if (savedReminders) setReminders(JSON.parse(savedReminders));
+      if (savedNotifications) setNotifications(JSON.parse(savedNotifications));
+      if (savedFutureBalance) setFutureBalance(parseFloat(savedFutureBalance));
+      if (savedFutureTransactions) setFutureTransactions(JSON.parse(savedFutureTransactions));
+      
+      // Se usuário estava logado, não mostrar tela de auth
+      if (userLoggedIn === 'true' && savedUser) {
+        setShowAuth(false);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar dados do localStorage:', error);
+    } finally {
+      setTimeout(() => setIsLoading(false), 2000);
     }
-    
-    setTimeout(() => setIsLoading(false), 2000);
   }, []);
 
   // Salvar dados
   useEffect(() => {
-    if (user) {
-      localStorage.setItem('bills', JSON.stringify(bills));
+    if (user && isClient) {
+      try {
+        localStorage.setItem('bills', JSON.stringify(bills));
+      } catch (error) {
+        console.error('Erro ao salvar contas:', error);
+      }
     }
-  }, [bills, user]);
+  }, [bills, user, isClient]);
 
   useEffect(() => {
-    if (user) {
-      localStorage.setItem('availableMoney', availableMoney.toString());
+    if (user && isClient) {
+      try {
+        localStorage.setItem('availableMoney', availableMoney.toString());
+      } catch (error) {
+        console.error('Erro ao salvar dinheiro disponível:', error);
+      }
     }
-  }, [availableMoney, user]);
+  }, [availableMoney, user, isClient]);
 
   useEffect(() => {
-    localStorage.setItem('darkMode', JSON.stringify(darkMode));
-  }, [darkMode]);
+    if (isClient) {
+      try {
+        localStorage.setItem('darkMode', JSON.stringify(darkMode));
+      } catch (error) {
+        console.error('Erro ao salvar tema:', error);
+      }
+    }
+  }, [darkMode, isClient]);
 
   useEffect(() => {
-    if (user) {
-      localStorage.setItem('reminders', JSON.stringify(reminders));
+    if (user && isClient) {
+      try {
+        localStorage.setItem('reminders', JSON.stringify(reminders));
+      } catch (error) {
+        console.error('Erro ao salvar lembretes:', error);
+      }
     }
-  }, [reminders, user]);
+  }, [reminders, user, isClient]);
 
   useEffect(() => {
-    if (user) {
-      localStorage.setItem('notifications', JSON.stringify(notifications));
+    if (user && isClient) {
+      try {
+        localStorage.setItem('notifications', JSON.stringify(notifications));
+      } catch (error) {
+        console.error('Erro ao salvar notificações:', error);
+      }
     }
-  }, [notifications, user]);
+  }, [notifications, user, isClient]);
 
   useEffect(() => {
-    if (user) {
-      localStorage.setItem('futureBalance', futureBalance.toString());
+    if (user && isClient) {
+      try {
+        localStorage.setItem('futureBalance', futureBalance.toString());
+      } catch (error) {
+        console.error('Erro ao salvar saldo futuro:', error);
+      }
     }
-  }, [futureBalance, user]);
+  }, [futureBalance, user, isClient]);
 
   useEffect(() => {
-    if (user) {
-      localStorage.setItem('futureTransactions', JSON.stringify(futureTransactions));
+    if (user && isClient) {
+      try {
+        localStorage.setItem('futureTransactions', JSON.stringify(futureTransactions));
+      } catch (error) {
+        console.error('Erro ao salvar transações futuras:', error);
+      }
     }
-  }, [futureTransactions, user]);
+  }, [futureTransactions, user, isClient]);
 
   const totalBills = bills.reduce((sum, bill) => sum + bill.amount, 0);
   const paidBills = bills.filter(bill => bill.paid);
@@ -163,6 +201,11 @@ export default function App() {
     setUser(userData);
     setShowAuth(false);
     
+    // Salvar estado de login
+    if (isClient) {
+      localStorage.setItem('userLoggedIn', 'true');
+    }
+    
     // Adiciona notificação de boas-vindas
     addNotification({
       title: 'Bem-vindo(a)! 🎉',
@@ -174,7 +217,9 @@ export default function App() {
 
   // Função para lidar com logout
   const handleLogout = () => {
-    localStorage.removeItem('userLoggedIn');
+    if (isClient) {
+      localStorage.removeItem('userLoggedIn');
+    }
     setUser(null);
     setShowAuth(true);
   };
@@ -187,6 +232,11 @@ export default function App() {
     };
     setFutureTransactions(prev => [...prev, newTransaction]);
   };
+
+  // Não renderizar nada até estar no client
+  if (!isClient) {
+    return <div className="min-h-screen bg-gray-50 dark:bg-gray-900" />;
+  }
 
   if (isLoading) {
     return <LoadingScreen onLoadingComplete={() => setIsLoading(false)} />;
