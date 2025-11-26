@@ -58,38 +58,33 @@ interface StatCardProps {
 }
 
 // Componente do Gráfico de Pizza
-function PieChartComponent({ bills }: { bills: Bill[], darkMode: boolean }) {
-  const categories = bills.reduce((acc, bill) => {
-    const category = bill.category || 'Outros';
-    if (!acc[category]) {
-      acc[category] = { amount: 0, count: 0, color: getCategoryColor(category) };
-    }
-    acc[category].amount += bill.amount;
-    acc[category].count += 1;
+function PieChartComponent({ bills}: { bills: Bill[], darkMode: boolean }) {
+  // Cores fixas para cada categoria
+  const categoryColors: Record<string, string> = {
+    'casa': '#ec4899',
+    'alimentacao': '#8b5cf6', 
+    'transporte': '#06b6d4',
+    'saude': '#10b981',
+    'educacao': '#f59e0b',
+    'lazer': '#ef4444',
+    'outros': '#6b7280'
+  };
+
+  // Calcular totais por categoria
+  const categoryTotals = bills.reduce((acc, bill) => {
+    const category = bill.category || 'outros';
+    acc[category] = (acc[category] || 0) + bill.amount;
     return acc;
-  }, {} as Record<string, { amount: number; count: number; color: string }>);
+  }, {} as Record<string, number>);
 
   const totalAmount = bills.reduce((sum, bill) => sum + bill.amount, 0);
-  const categoriesArray = Object.entries(categories).map(([name, data]) => ({
+  
+  const categoriesArray = Object.entries(categoryTotals).map(([name, amount]) => ({
     name,
-    amount: data.amount,
-    percentage: totalAmount > 0 ? (data.amount / totalAmount) * 100 : 0,
-    color: data.color,
-    count: data.count
+    amount,
+    percentage: totalAmount > 0 ? (amount / totalAmount) * 100 : 0,
+    color: categoryColors[name] || '#6b7280'
   })).sort((a, b) => b.amount - a.amount);
-
-  const getCategoryColor = (category: string) => {
-    const colors = {
-      'casa': '#ec4899',
-      'alimentacao': '#8b5cf6',
-      'transporte': '#06b6d4',
-      'saude': '#10b981',
-      'educacao': '#f59e0b',
-      'lazer': '#ef4444',
-      'outros': '#6b7280'
-    };
-    return colors[category as keyof typeof colors] || '#6b7280';
-  };
 
   if (bills.length === 0) {
     return (
@@ -384,7 +379,6 @@ function StatCard({ stat, index, onMoneyChange, onFutureBalanceChange }: StatCar
       onMoneyChange?.(numericValue);
     }
   };
-
 
   return (
     <motion.div
