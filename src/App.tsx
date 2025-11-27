@@ -233,6 +233,10 @@ export default function App() {
     setFutureTransactions(prev => [...prev, newTransaction]);
   };
 
+  const handleDeleteFutureTransaction = (id: string) => {
+    setFutureTransactions(prev => prev.filter(transaction => transaction.id !== id));
+  };
+
   // Não renderizar nada até estar no client
   if (!isClient) {
     return <div className="min-h-screen bg-gray-50 dark:bg-gray-900" />;
@@ -271,6 +275,7 @@ export default function App() {
             futureBalance={futureBalance}
             onFutureBalanceChange={setFutureBalance}
             futureTransactions={futureTransactions}
+            onDeleteFutureTransaction={handleDeleteFutureTransaction} // prop deletar função adicionada 
             onAddFutureTransaction={handleAddFutureTransaction}
             bills={bills}
           />

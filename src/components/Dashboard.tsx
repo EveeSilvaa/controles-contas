@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TrendingUp, TrendingDown, Wallet, Calendar, Plus, X, BarChart3, PieChart } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, Calendar, Plus, X, BarChart3, PieChart, Trash2 } from 'lucide-react';
 import { formatCurrency, parseFormattedNumber, formatInputCurrency } from '../utils/formatters';
 
 interface DashboardProps {
@@ -17,6 +17,7 @@ interface DashboardProps {
   onFutureBalanceChange: (amount: number) => void;
   futureTransactions: FutureTransaction[];
   onAddFutureTransaction: (transaction: Omit<FutureTransaction, 'id'>) => void;
+  onDeleteFutureTransaction?: (id: string) => void; 
   bills: Bill[];
 }
 
@@ -58,7 +59,7 @@ interface StatCardProps {
 }
 
 // Componente do Gráfico de Pizza
-function PieChartComponent({ bills}: { bills: Bill[], darkMode: boolean }) {
+function PieChartComponent({ bills }: { bills: Bill[], darkMode: boolean }) {
   // Cores fixas para cada categoria
   const categoryColors: Record<string, string> = {
     'casa': '#ec4899',
@@ -452,6 +453,7 @@ export default function Dashboard({
   onFutureBalanceChange,
   futureTransactions = [],
   onAddFutureTransaction,
+  onDeleteFutureTransaction, 
   bills
 }: DashboardProps) {
   const [showAddModal, setShowAddModal] = useState(false);
@@ -518,6 +520,28 @@ export default function Dashboard({
       date: new Date().toISOString(),
       type: 'system'
     });
+  };
+
+  // FUNÇÃO SEGURA PARA EXCLUSÃO DE TRANSAÇÃO
+  const handleDeleteTransaction = (transaction: FutureTransaction) => {
+    if (onDeleteFutureTransaction) {
+      onDeleteFutureTransaction(transaction.id);
+      addNotification({
+        title: 'Transação Futura Removida',
+        message: `${transaction.description} de ${formatCurrency(transaction.amount)} foi removida.`,
+        date: new Date().toISOString(),
+        type: 'system'
+      });
+    } else {
+      // Fallback caso a função não esteja disponível
+      console.warn('Função onDeleteFutureTransaction não disponível');
+      addNotification({
+        title: 'Erro',
+        message: 'Não foi possível excluir a transação. Função não disponível.',
+        date: new Date().toISOString(),
+        type: 'system'
+      });
+    }
   };
 
   return (
@@ -601,19 +625,32 @@ export default function Dashboard({
                     </p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className={`text-lg font-bold ${transaction.received
-                      ? 'text-green-600 dark:text-green-400'
-                      : 'text-purple-600 dark:text-purple-400'
-                    }`}>
-                    {formatCurrency(transaction.amount)}
-                  </p>
-                  <span className={`text-xs px-2 py-1 rounded-full ${transaction.received
-                      ? 'bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-300'
-                      : 'bg-purple-100 dark:bg-purple-800 text-purple-700 dark:text-purple-300'
-                    }`}>
-                    {transaction.received ? 'Recebido' : 'Pendente'}
-                  </span>
+                
+                <div className="flex items-center gap-3">
+                  <div className="text-right">
+                    <p className={`text-lg font-bold ${transaction.received
+                        ? 'text-green-600 dark:text-green-400'
+                        : 'text-purple-600 dark:text-purple-400'
+                      }`}>
+                      {formatCurrency(transaction.amount)}
+                    </p>
+                    <span className={`text-xs px-2 py-1 rounded-full ${transaction.received
+                        ? 'bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-300'
+                        : 'bg-purple-100 dark:bg-purple-800 text-purple-700 dark:text-purple-300'
+                      }`}>
+                      {transaction.received ? 'Recebido' : 'Pendente'}
+                    </span>
+                  </div>
+                  
+                  <motion.button
+                    onClick={() => handleDeleteTransaction(transaction)}
+                    className="p-2 text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    title="Excluir transação"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </motion.button>
                 </div>
               </motion.div>
             ))}
