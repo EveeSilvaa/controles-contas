@@ -12,7 +12,7 @@ Um aplicativo web moderno e intuitivo para controle financeiro pessoal, desenvol
 - **Visão geral financeira** com saldo disponível, contas e projeções
 - **Saldo Futuro** para planejamento de receitas esperadas
 - **Gráficos interativos** de despesas por categoria
-- **Histórico de pagamentos** com status em tempo real
+
 
 ### 💰 **Gestão de Contas**
 - ✅ Adicionar, editar e excluir contas
