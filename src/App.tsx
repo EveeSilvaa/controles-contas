@@ -1,326 +1,186 @@
-import { useState, useEffect } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useCallback } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import LoadingScreen from './components/LoadingScreen';
 import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
 import BillsManager from './components/BillsManager';
+import IncomeManager from './components/Income';
 import Analytics from './components/Analytics';
+import Goals from './components/Goals';
 import Calendar from './components/Calendar';
+import OpenFinance from './components/OpenFinance';
 import Notifications from './components/Notifications';
 import Settings from './components/Settings';
 import Auth from './components/CadastroForm';
 
-export interface Bill {
-  id: string;
-  name: string;
-  amount: number;
-  dueDate: string;
-  paid: boolean;
-  category: string;
-  description?: string;
-  installments?: number;
-  currentInstallment?: number;
-}
-
-export interface Reminder {
-  id: string;
-  title: string;
-  description: string;
-  date: string;
-  time: string;
-  completed: boolean;
-  billId?: string;
-}
-
-export interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  date: string;
-  read: boolean;
-  type: 'bill' | 'reminder' | 'system';
-}
-
-export interface User {
-  id: string;
-  nome: string;
-  email: string;
-  celular: string;
-}
-
-export interface FutureTransaction {
-  id: string;
-  description: string;
-  amount: number;
-  expectedDate: string;
-  received: boolean;
-}
+import type { Bill, Income, Goal, Reminder, Notification, FutureTransaction, User } from './types';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const [activeSection, setActiveSection] = useState('dashboard');
   const [user, setUser] = useState<User | null>(null);
-  const [showAuth, setShowAuth] = useState(true);
 
   const [bills, setBills] = useState<Bill[]>([]);
+  const [incomes, setIncomes] = useState<Income[]>([]);
+  const [goals, setGoals] = useState<Goal[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [availableMoney, setAvailableMoney] = useState<number>(0);
-  const [futureBalance, setFutureBalance] = useState<number>(0);
   const [futureTransactions, setFutureTransactions] = useState<FutureTransaction[]>([]);
+  const [availableMoney, setAvailableMoney] = useState<number>(0);
 
-  // Estado para controlar se estamos no client
-  const [isClient, setIsClient] = useState(false);
-
-  // Carregar dados do localStorage APENAS no client
+  // ── Load from localStorage ─────────────────────────────────────────────
   useEffect(() => {
     setIsClient(true);
-    
     try {
-      const savedUser = localStorage.getItem('financeFlowUser');
-      const savedBills = localStorage.getItem('bills');
-      const savedMoney = localStorage.getItem('availableMoney');
-      const savedTheme = localStorage.getItem('darkMode');
-      const savedReminders = localStorage.getItem('reminders');
-      const savedNotifications = localStorage.getItem('notifications');
-      const savedFutureBalance = localStorage.getItem('futureBalance');
-      const savedFutureTransactions = localStorage.getItem('futureTransactions');
-      const userLoggedIn = localStorage.getItem('userLoggedIn');
+      const ls = (key: string) => {
+        const v = localStorage.getItem(key);
+        return v ? JSON.parse(v) : null;
+      };
 
-      if (savedUser) setUser(JSON.parse(savedUser));
-      if (savedBills) setBills(JSON.parse(savedBills));
-      if (savedMoney) setAvailableMoney(parseFloat(savedMoney));
-      if (savedTheme) setDarkMode(JSON.parse(savedTheme));
-      if (savedReminders) setReminders(JSON.parse(savedReminders));
-      if (savedNotifications) setNotifications(JSON.parse(savedNotifications));
-      if (savedFutureBalance) setFutureBalance(parseFloat(savedFutureBalance));
-      if (savedFutureTransactions) setFutureTransactions(JSON.parse(savedFutureTransactions));
-      
-      // Se usuário estava logado, não mostrar tela de auth
-      if (userLoggedIn === 'true' && savedUser) {
-        setShowAuth(false);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar dados do localStorage:', error);
+      const savedUser = ls('financeFlowUser');
+      const loggedIn = localStorage.getItem('userLoggedIn') === 'true';
+
+      if (savedUser && loggedIn) setUser(savedUser);
+
+      setBills(ls('bills') ?? []);
+      setIncomes(ls('incomes') ?? []);
+      setGoals(ls('goals') ?? []);
+      setReminders(ls('reminders') ?? []);
+      setNotifications(ls('notifications') ?? []);
+      setFutureTransactions(ls('futureTransactions') ?? []);
+      setAvailableMoney(parseFloat(localStorage.getItem('availableMoney') ?? '0') || 0);
+    } catch (e) {
+      console.error('Error loading from localStorage:', e);
     } finally {
-      setTimeout(() => setIsLoading(false), 2000);
+      setTimeout(() => setIsLoading(false), 1800);
     }
   }, []);
 
-  // Salvar dados
-  useEffect(() => {
-    if (user && isClient) {
-      try {
-        localStorage.setItem('bills', JSON.stringify(bills));
-      } catch (error) {
-        console.error('Erro ao salvar contas:', error);
-      }
-    }
-  }, [bills, user, isClient]);
+  // ── Persist to localStorage ────────────────────────────────────────────
+  useEffect(() => { if (isClient) localStorage.setItem('bills', JSON.stringify(bills)); }, [bills, isClient]);
+  useEffect(() => { if (isClient) localStorage.setItem('incomes', JSON.stringify(incomes)); }, [incomes, isClient]);
+  useEffect(() => { if (isClient) localStorage.setItem('goals', JSON.stringify(goals)); }, [goals, isClient]);
+  useEffect(() => { if (isClient) localStorage.setItem('reminders', JSON.stringify(reminders)); }, [reminders, isClient]);
+  useEffect(() => { if (isClient) localStorage.setItem('notifications', JSON.stringify(notifications)); }, [notifications, isClient]);
+  useEffect(() => { if (isClient) localStorage.setItem('futureTransactions', JSON.stringify(futureTransactions)); }, [futureTransactions, isClient]);
+  useEffect(() => { if (isClient) localStorage.setItem('availableMoney', availableMoney.toString()); }, [availableMoney, isClient]);
 
-  useEffect(() => {
-    if (user && isClient) {
-      try {
-        localStorage.setItem('availableMoney', availableMoney.toString());
-      } catch (error) {
-        console.error('Erro ao salvar dinheiro disponível:', error);
-      }
-    }
-  }, [availableMoney, user, isClient]);
+  // ── Helpers ────────────────────────────────────────────────────────────
+  const addNotification = useCallback((n: Omit<Notification, 'id' | 'read'>) => {
+    const newN: Notification = { ...n, id: Date.now().toString(), read: false };
+    setNotifications(prev => [newN, ...prev.slice(0, 99)]);
+  }, []);
 
-  useEffect(() => {
-    if (isClient) {
-      try {
-        localStorage.setItem('darkMode', JSON.stringify(darkMode));
-      } catch (error) {
-        console.error('Erro ao salvar tema:', error);
-      }
-    }
-  }, [darkMode, isClient]);
-
-  useEffect(() => {
-    if (user && isClient) {
-      try {
-        localStorage.setItem('reminders', JSON.stringify(reminders));
-      } catch (error) {
-        console.error('Erro ao salvar lembretes:', error);
-      }
-    }
-  }, [reminders, user, isClient]);
-
-  useEffect(() => {
-    if (user && isClient) {
-      try {
-        localStorage.setItem('notifications', JSON.stringify(notifications));
-      } catch (error) {
-        console.error('Erro ao salvar notificações:', error);
-      }
-    }
-  }, [notifications, user, isClient]);
-
-  useEffect(() => {
-    if (user && isClient) {
-      try {
-        localStorage.setItem('futureBalance', futureBalance.toString());
-      } catch (error) {
-        console.error('Erro ao salvar saldo futuro:', error);
-      }
-    }
-  }, [futureBalance, user, isClient]);
-
-  useEffect(() => {
-    if (user && isClient) {
-      try {
-        localStorage.setItem('futureTransactions', JSON.stringify(futureTransactions));
-      } catch (error) {
-        console.error('Erro ao salvar transações futuras:', error);
-      }
-    }
-  }, [futureTransactions, user, isClient]);
-
-  const totalBills = bills.reduce((sum, bill) => sum + bill.amount, 0);
-  const paidBills = bills.filter(bill => bill.paid);
-  const totalPaid = paidBills.reduce((sum, bill) => sum + bill.amount, 0);
-  
-  // SALDO FINAL AGORA INCLUI O SALDO FUTURO
-  const balance = availableMoney - totalBills + totalPaid + futureBalance;
-
-  // Função para adicionar notificação
-  const addNotification = (notification: Omit<Notification, 'id' | 'read'>) => {
-    const newNotification: Notification = {
-      ...notification,
-      id: Date.now().toString(),
-      read: false
-    };
-    setNotifications(prev => [newNotification, ...prev]);
-  };
-
-  // Função para lidar com login
   const handleLogin = (userData: User) => {
     setUser(userData);
-    setShowAuth(false);
-    
-    // Salvar estado de login
-    if (isClient) {
-      localStorage.setItem('userLoggedIn', 'true');
-    }
-    
-    // Adiciona notificação de boas-vindas
+    localStorage.setItem('financeFlowUser', JSON.stringify(userData));
+    localStorage.setItem('userLoggedIn', 'true');
     addNotification({
-      title: 'Bem-vindo(a)! 🎉',
-      message: `Que bom te ver por aqui, ${userData.nome}! Suas finanças estão esperando por você.`,
+      title: `Bem-vindo(a), ${userData.nome.split(' ')[0]}!`,
+      message: 'Suas finanças estão esperando por você.',
       date: new Date().toISOString(),
-      type: 'system'
+      type: 'system',
     });
   };
 
-  // Função para lidar com logout
   const handleLogout = () => {
-    if (isClient) {
-      localStorage.removeItem('userLoggedIn');
-    }
+    localStorage.removeItem('userLoggedIn');
     setUser(null);
-    setShowAuth(true);
+    setActiveSection('dashboard');
   };
 
-  // Função para adicionar transação futura
-  const handleAddFutureTransaction = (transaction: Omit<FutureTransaction, 'id'>) => {
-    const newTransaction: FutureTransaction = {
-      ...transaction,
-      id: Date.now().toString()
-    };
-    setFutureTransactions(prev => [...prev, newTransaction]);
-  };
+  const handleAddFutureTransaction = (t: Omit<FutureTransaction, 'id'>) =>
+    setFutureTransactions(prev => [...prev, { ...t, id: Date.now().toString() }]);
 
-  const handleDeleteFutureTransaction = (id: string) => {
-    setFutureTransactions(prev => prev.filter(transaction => transaction.id !== id));
-  };
+  const handleDeleteFutureTransaction = (id: string) =>
+    setFutureTransactions(prev => prev.filter(t => t.id !== id));
 
-  // Não renderizar nada até estar no client
-  if (!isClient) {
-    return <div className="min-h-screen bg-gray-50 dark:bg-gray-900" />;
-  }
-
-  if (isLoading) {
-    return <LoadingScreen onLoadingComplete={() => setIsLoading(false)} />;
-  }
-
-  // Mostrar tela de autenticação se não houver usuário logado
-  if (showAuth || !user) {
-    return <Auth onLogin={handleLogin} darkMode={darkMode} />;
-  }
+  // ── Render guards ──────────────────────────────────────────────────────
+  if (!isClient) return <div className="min-h-screen bg-surface-50" />;
+  if (isLoading) return <LoadingScreen onLoadingComplete={() => setIsLoading(false)} />;
+  if (!user) return <Auth onLogin={handleLogin} />;
 
   return (
     <Layout
       activeSection={activeSection}
       onSectionChange={setActiveSection}
-      darkMode={darkMode}
-      setDarkMode={setDarkMode}
       user={user}
       onLogout={handleLogout}
+      notifications={notifications}
     >
       <AnimatePresence mode="wait">
         {activeSection === 'dashboard' && (
-          <Dashboard
-            availableMoney={availableMoney}
-            totalBills={totalBills}
-            totalPaid={totalPaid}
-            balance={balance}
-            paidBillsCount={paidBills.length}
-            totalBillsCount={bills.length}
-            onMoneyChange={setAvailableMoney}
-            darkMode={darkMode}
-            addNotification={addNotification}
-            futureBalance={futureBalance}
-            onFutureBalanceChange={setFutureBalance}
-            futureTransactions={futureTransactions}
-            onDeleteFutureTransaction={handleDeleteFutureTransaction} // prop deletar função adicionada 
-            onAddFutureTransaction={handleAddFutureTransaction}
-            bills={bills}
-          />
+          <motion.div key="dashboard" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+            <Dashboard
+              availableMoney={availableMoney}
+              onMoneyChange={setAvailableMoney}
+              bills={bills}
+              incomes={incomes}
+              futureTransactions={futureTransactions}
+              onAddFutureTransaction={handleAddFutureTransaction}
+              onDeleteFutureTransaction={handleDeleteFutureTransaction}
+              addNotification={addNotification}
+            />
+          </motion.div>
         )}
 
         {activeSection === 'bills' && (
-          <BillsManager
-            bills={bills}
-            setBills={setBills}
-            darkMode={darkMode}
-            addNotification={addNotification}
-          />
+          <motion.div key="bills" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+            <BillsManager bills={bills} setBills={setBills} addNotification={addNotification} />
+          </motion.div>
+        )}
+
+        {activeSection === 'income' && (
+          <motion.div key="income" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+            <IncomeManager incomes={incomes} setIncomes={setIncomes} addNotification={addNotification} />
+          </motion.div>
         )}
 
         {activeSection === 'analytics' && (
-          <Analytics
-            bills={bills}
-            darkMode={darkMode}
-          />
+          <motion.div key="analytics" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+            <Analytics bills={bills} incomes={incomes} />
+          </motion.div>
+        )}
+
+        {activeSection === 'goals' && (
+          <motion.div key="goals" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+            <Goals goals={goals} setGoals={setGoals} bills={bills} />
+          </motion.div>
         )}
 
         {activeSection === 'calendar' && (
-          <Calendar
-            reminders={reminders}
-            setReminders={setReminders}
-            bills={bills}
-            darkMode={darkMode}
-            addNotification={addNotification}
-          />
+          <motion.div key="calendar" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+            <Calendar
+              reminders={reminders}
+              setReminders={setReminders}
+              bills={bills}
+              darkMode={false}
+              addNotification={addNotification}
+            />
+          </motion.div>
+        )}
+
+        {activeSection === 'openfinance' && (
+          <motion.div key="openfinance" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+            <OpenFinance />
+          </motion.div>
         )}
 
         {activeSection === 'notifications' && (
-          <Notifications
-            notifications={notifications}
-            setNotifications={setNotifications}
-            darkMode={darkMode}
-            addNotification={addNotification}
-          />
+          <motion.div key="notifications" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+            <Notifications
+              notifications={notifications}
+              setNotifications={setNotifications}
+              addNotification={addNotification}
+            />
+          </motion.div>
         )}
 
         {activeSection === 'settings' && (
-          <Settings
-            darkMode={darkMode}
-            setDarkMode={setDarkMode}
-          />
+          <motion.div key="settings" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+            <Settings user={user} onLogout={handleLogout} />
+          </motion.div>
         )}
       </AnimatePresence>
     </Layout>

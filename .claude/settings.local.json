@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__c9a3889c-feff-40c6-b94b-8e137aa96629__list_projects",
+      "mcp__c9a3889c-feff-40c6-b94b-8e137aa96629__get_cost",
+      "mcp__c9a3889c-feff-40c6-b94b-8e137aa96629__confirm_cost",
+      "mcp__c9a3889c-feff-40c6-b94b-8e137aa96629__create_project",
+      "Bash(npm install *)",
+      "Bash(node -e \"const p = require\\('./package.json'\\); console.log\\(JSON.stringify\\(Object.keys\\(p.dependencies\\)\\)\\)\")",
+      "Bash(npm run *)"
+    ]
+  }
+}

@@ -1,298 +1,193 @@
-import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { Eye, EyeOff, User, Mail, Lock, Heart, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Eye, EyeOff, Wallet, ArrowRight, User, Mail, Phone } from 'lucide-react';
+import type { User as UserType } from '../types';
 
 interface AuthProps {
-  onLogin: (user: User) => void;
-  darkMode: boolean;
-}
-
-interface User {
-  id: string;
-  nome: string;
-  email: string;
-  celular: string;
+  onLogin: (user: UserType) => void;
 }
 
 export default function Auth({ onLogin }: AuthProps) {
-  const [isLogin, setIsLogin] = useState(true);
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    nome: '',
-    email: '',
-    celular: '',
-    password: '',
-    confirmPassword: ''
-  });
+  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [showPass, setShowPass] = useState(false);
+  const [form, setForm] = useState({ nome: '', email: '', celular: '', senha: '' });
+  const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setError('');
 
-    // Simulação de processo de autenticação
-    setTimeout(() => {
-      const user: User = {
-        id: Date.now().toString(),
-        nome: formData.nome || 'Usuário Financeiro',
-        email: formData.email,
-        celular: formData.celular || '(11) 99999-9999'
-      };
+    if (mode === 'register') {
+      if (!form.nome.trim()) return setError('Nome é obrigatório');
+      if (form.nome.trim().split(' ').length < 2) return setError('Digite nome e sobrenome');
+    }
 
-      // Salva no localStorage (em uma aplicação real, isso seria no backend)
-      localStorage.setItem('financeFlowUser', JSON.stringify(user));
-      localStorage.setItem('userLoggedIn', 'true');
+    if (!form.email.includes('@')) return setError('E-mail inválido');
+    if (form.senha.length < 4) return setError('Senha muito curta (mínimo 4 caracteres)');
 
-      setLoading(false);
-      onLogin(user);
-    }, 2000);
-  };
+    const userData: UserType = {
+      id: Date.now().toString(),
+      nome: form.nome || form.email.split('@')[0],
+      email: form.email,
+      celular: form.celular || '',
+    };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    // Persist user
+    localStorage.setItem('financeFlowUser', JSON.stringify(userData));
+    localStorage.setItem('userLoggedIn', 'true');
+    onLogin(userData);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-400 via-purple-500 to-indigo-600 flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md"
-      >
-        {/* Header Fofo */}
-        <motion.div
-          initial={{ y: -50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="text-center mb-8"
-        >
-          <motion.div
-            animate={{ 
-              rotate: [0, -10, 10, -5, 5, 0],
-              scale: [1, 1.1, 1]
-            }}
-            transition={{ duration: 2, repeat: Infinity, repeatDelay: 5 }}
-            className="w-20 h-20 bg-white rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg"
-          >
-            <Heart className="w-10 h-10 text-pink-500" fill="currentColor" />
-          </motion.div>
-          <h1 className="text-4xl font-bold text-white mb-2">
-            FinanceFlow
-          </h1>
-          <p className="text-pink-100 text-lg">
-            {isLogin ? 'Bem-vindo de volta! 💖' : 'Junte-se a nós! ✨'}
-          </p>
-        </motion.div>
+    <div className="min-h-screen flex" style={{ background: '#0A0A14' }}>
+      {/* Left panel - branding */}
+      <div className="hidden lg:flex flex-col justify-between w-[480px] p-12" style={{ background: '#1C1C28' }}>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-brand flex items-center justify-center">
+            <Wallet size={20} className="text-white" />
+          </div>
+          <div>
+            <span className="text-white font-bold text-lg leading-none">FinanceFlow</span>
+            <span className="block text-xs text-gray-400 leading-none">Pro</span>
+          </div>
+        </div>
 
-        {/* Card do Formulário */}
-        <motion.div
-          initial={{ y: 50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl p-8"
-        >
-          {/* Abas Login/Cadastro */}
-          <div className="flex mb-8 bg-gray-100 rounded-2xl p-1">
-            <button
-              onClick={() => setIsLogin(true)}
-              className={`flex-1 py-3 px-4 rounded-xl transition-all duration-300 ${
-                isLogin 
-                  ? 'bg-pink-500 text-white shadow-md' 
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Entrar
-            </button>
-            <button
-              onClick={() => setIsLogin(false)}
-              className={`flex-1 py-3 px-4 rounded-xl transition-all duration-300 ${
-                !isLogin 
-                  ? 'bg-pink-500 text-white shadow-md' 
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Cadastrar
-            </button>
+        <div className="space-y-8">
+          <div>
+            <h1 className="text-3xl font-bold text-white leading-tight">
+              Controle total das suas finanças
+            </h1>
+            <p className="text-gray-400 mt-3 leading-relaxed">
+              Gerencie contas, receitas e metas. Conecte seus bancos e tenha uma visão completa da sua vida financeira.
+            </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Nome (apenas no cadastro) */}
-            {!isLogin && (
-              <motion.div
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-              >
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                  <User className="w-4 h-4" />
-                  Seu nome
-                </label>
-                <input
-                  type="text"
-                  name="nome"
-                  value={formData.nome}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
-                  placeholder="Como quer ser chamado?"
-                  required={!isLogin}
-                />
-              </motion.div>
-            )}
-
-            {/* Email */}
-            <motion.div
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.1 }}
-            >
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                <Mail className="w-4 h-4" />
-                E-mail
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
-                placeholder="seu@email.com"
-                required
-              />
-            </motion.div>
-
-            {/* Celular (apenas no cadastro) */}
-            {!isLogin && (
-              <motion.div
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.2 }}
-              >
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                  <Sparkles className="w-4 h-4" />
-                  Celular (opcional)
-                </label>
-                <input
-                  type="tel"
-                  name="celular"
-                  value={formData.celular}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
-                  placeholder="(11) 99999-9999"
-                />
-              </motion.div>
-            )}
-
-            {/* Senha */}
-            <motion.div
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.3 }}
-            >
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                <Lock className="w-4 h-4" />
-                Senha
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all pr-12"
-                  placeholder="Sua senha secreta"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-            </motion.div>
-
-            {/* Confirmar Senha (apenas no cadastro) */}
-            {!isLogin && (
-              <motion.div
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.4 }}
-              >
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                  <Lock className="w-4 h-4" />
-                  Confirmar Senha
-                </label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
-                  placeholder="Digite novamente"
-                  required={!isLogin}
-                />
-              </motion.div>
-            )}
-
-            {/* Botão de Submit */}
-            <motion.button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              {loading ? (
-                <div className="flex items-center justify-center gap-2">
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                  />
-                  {isLogin ? 'Entrando...' : 'Cadastrando...'}
+          <div className="space-y-4">
+            {[
+              { emoji: '📊', title: 'Dashboard completo', desc: 'Gráficos e insights em tempo real' },
+              { emoji: '🏦', title: 'Open Finance', desc: 'Conecte seus bancos com segurança' },
+              { emoji: '🎯', title: 'Metas de orçamento', desc: 'Defina limites por categoria' },
+              { emoji: '📅', title: 'Lembretes de vencimento', desc: 'Nunca perca um pagamento' },
+            ].map(f => (
+              <div key={f.title} className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-sidebar-hover flex items-center justify-center text-base">
+                  {f.emoji}
                 </div>
-              ) : (
-                <span className="flex items-center justify-center gap-2">
-                  <Sparkles className="w-5 h-5" />
-                  {isLogin ? 'Entrar na Conta' : 'Criar Minha Conta'}
-                </span>
+                <div>
+                  <p className="text-sm font-medium text-white">{f.title}</p>
+                  <p className="text-xs text-gray-500">{f.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <p className="text-xs text-gray-600">
+          © 2026 FinanceFlow Pro · Seus dados ficam no seu dispositivo
+        </p>
+      </div>
+
+      {/* Right panel - form */}
+      <div className="flex-1 flex items-center justify-center p-6">
+        <div className="w-full max-w-sm">
+          {/* Mobile logo */}
+          <div className="flex items-center gap-2 mb-8 lg:hidden">
+            <div className="w-8 h-8 rounded-lg bg-brand flex items-center justify-center">
+              <Wallet size={16} className="text-white" />
+            </div>
+            <span className="text-white font-bold">FinanceFlow Pro</span>
+          </div>
+
+          <AnimatePresence mode="wait">
+            <motion.div key={mode} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <h2 className="text-2xl font-bold text-white mb-1">
+                {mode === 'login' ? 'Bem-vindo de volta' : 'Criar conta'}
+              </h2>
+              <p className="text-gray-400 text-sm mb-8">
+                {mode === 'login' ? 'Entre para continuar' : 'Comece a controlar suas finanças'}
+              </p>
+
+              {error && (
+                <div className="mb-4 px-3 py-2 rounded-lg bg-danger/10 border border-danger/20 text-danger text-sm">
+                  {error}
+                </div>
               )}
-            </motion.button>
-          </form>
 
-          {/* Link para alternar */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="text-center mt-6"
-          >
-            <button
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-pink-500 hover:text-pink-600 font-medium"
-            >
-              {isLogin 
-                ? '📝 Não tem conta? Cadastre-se aqui!' 
-                : '🔐 Já tem conta? Faça login aqui!'}
-            </button>
-          </motion.div>
-        </motion.div>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {mode === 'register' && (
+                  <div className="relative">
+                    <User size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                    <input
+                      type="text"
+                      placeholder="Nome completo"
+                      value={form.nome}
+                      onChange={e => setForm({ ...form, nome: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 text-white placeholder:text-gray-500 text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
+                      required
+                    />
+                  </div>
+                )}
 
-        {/* Footer Fofo */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
-          className="text-center mt-6"
-        >
-          <p className="text-pink-100 text-sm">
-            💖 Organize suas finanças com amor e facilidade
-          </p>
-        </motion.div>
-      </motion.div>
+                <div className="relative">
+                  <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                  <input
+                    type="email"
+                    placeholder="E-mail"
+                    value={form.email}
+                    onChange={e => setForm({ ...form, email: e.target.value })}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 text-white placeholder:text-gray-500 text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
+                    required
+                  />
+                </div>
+
+                {mode === 'register' && (
+                  <div className="relative">
+                    <Phone size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                    <input
+                      type="tel"
+                      placeholder="Celular (opcional)"
+                      value={form.celular}
+                      onChange={e => setForm({ ...form, celular: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 text-white placeholder:text-gray-500 text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
+                    />
+                  </div>
+                )}
+
+                <div className="relative">
+                  <input
+                    type={showPass ? 'text' : 'password'}
+                    placeholder="Senha"
+                    value={form.senha}
+                    onChange={e => setForm({ ...form, senha: e.target.value })}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pr-10 text-white placeholder:text-gray-500 text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
+                    required
+                  />
+                  <button type="button" onClick={() => setShowPass(v => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300">
+                    {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+
+                <button type="submit"
+                  className="w-full flex items-center justify-center gap-2 bg-brand hover:bg-brand-600 text-white font-semibold py-3 rounded-xl transition-colors shadow-brand">
+                  {mode === 'login' ? 'Entrar' : 'Criar conta'}
+                  <ArrowRight size={16} />
+                </button>
+              </form>
+
+              <p className="text-center text-sm text-gray-500 mt-6">
+                {mode === 'login' ? 'Não tem conta?' : 'Já tem conta?'}{' '}
+                <button
+                  onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); }}
+                  className="text-brand hover:text-brand-400 font-medium transition-colors"
+                >
+                  {mode === 'login' ? 'Criar agora' : 'Entrar'}
+                </button>
+              </p>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
     </div>
   );
 }
