@@ -194,7 +194,7 @@ export default function IncomeManager({ incomes, setIncomes, addNotification }: 
 
       {/* List */}
       <div className="card-p space-y-3">
-        <div className="flex items-center gap-1 border-b border-surface-100 -mx-6 px-6 pb-3">
+        <div className="tabs-scroll">
           {(['all', 'received', 'pending'] as const).map(f => (
             <button key={f} onClick={() => setFilterReceived(f)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
@@ -214,7 +214,7 @@ export default function IncomeManager({ incomes, setIncomes, addNotification }: 
             </button>
           </div>
         ) : (
-          <div className="-mx-6">
+          <div className="-mx-4 sm:-mx-6">
             <AnimatePresence>
               {filtered.map(income => {
                 const catInfo = getIncomeCategoryInfo(income.category);

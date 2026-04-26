@@ -251,7 +251,7 @@ export default function BillsManager({ bills, setBills, addNotification }: Bills
       {/* Filters + list */}
       <div className="card-p space-y-3">
         {/* Filter tabs */}
-        <div className="flex items-center gap-1 border-b border-surface-100 -mx-6 px-6 pb-3 overflow-x-auto">
+        <div className="tabs-scroll">
           {filterTabs.map(tab => (
             <button key={tab.id} onClick={() => setFilter(tab.id)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
@@ -266,8 +266,8 @@ export default function BillsManager({ bills, setBills, addNotification }: Bills
         </div>
 
         {/* Search + sort */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="relative flex-1 min-w-[180px]">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+          <div className="relative flex-1 min-w-0">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-faint" />
             <input className="input-sm pl-8" placeholder="Buscar por nome ou categoria..."
               value={search} onChange={e => setSearch(e.target.value)} />
@@ -293,7 +293,7 @@ export default function BillsManager({ bills, setBills, addNotification }: Bills
             <p className="text-sm text-ink-muted">Nenhuma conta encontrada</p>
           </div>
         ) : (
-          <div className="-mx-6">
+          <div className="-mx-4 sm:-mx-6">
             <AnimatePresence>
               {filtered.map(bill => {
                 const overdue = !bill.paid && new Date(bill.dueDate) < today;
