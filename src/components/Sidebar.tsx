@@ -1,174 +1,199 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Home, 
-  DollarSign, 
-  PieChart, 
-  Settings,
-  Calendar,
-  FileText,
-  Bell,
-  ChevronLeft,
-  ChevronRight,
+import {
+  LayoutDashboard, Receipt, BarChart3, CalendarDays,
+  Bell, Settings, TrendingUp, Target, Landmark,
+  ChevronLeft, ChevronRight, Wallet, X
 } from 'lucide-react';
 
 interface SidebarProps {
   activeSection: string;
   onSectionChange: (section: string) => void;
-  darkMode: boolean;
-  onThemeToggle: () => void;
-  sidebarOpen: boolean;
-  setSidebarOpen: (open: boolean) => void;
-  onSidebarToggle: () => void;
+  collapsed: boolean;
+  onToggleCollapse: () => void;
+  mobileOpen: boolean;
+  onMobileClose: () => void;
+  notificationCount: number;
+  userName: string;
 }
 
-export default function Sidebar({ 
-  activeSection, 
-  onSectionChange, 
-  darkMode, 
-  sidebarOpen,
-  onSidebarToggle 
-}: SidebarProps) {
-  const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home },
-    { id: 'bills', label: 'Contas', icon: FileText },
-    { id: 'analytics', label: 'Analytics', icon: PieChart },
-    { id: 'calendar', label: 'Calendário', icon: Calendar },
-    { id: 'notifications', label: 'Notificações', icon: Bell },
-    { id: 'settings', label: 'Configurações', icon: Settings },
-  ];
+const navItems = [
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'bills', label: 'Contas', icon: Receipt },
+  { id: 'income', label: 'Receitas', icon: TrendingUp },
+  { id: 'analytics', label: 'Análises', icon: BarChart3 },
+  { id: 'goals', label: 'Metas', icon: Target },
+  { id: 'calendar', label: 'Calendário', icon: CalendarDays },
+  { id: 'openfinance', label: 'Open Finance', icon: Landmark },
+];
 
-  // Função para lidar com clique nos itens do menu (fecha sidebar no mobile)
-  const handleMenuClick = (sectionId: string) => {
-    onSectionChange(sectionId);
-    
-    // Fecha sidebar automaticamente no mobile
-    if (window.innerWidth < 1024) { // lg breakpoint
-      onSidebarToggle();
-    }
-  };
+const bottomItems = [
+  { id: 'notifications', label: 'Notificações', icon: Bell },
+  { id: 'settings', label: 'Configurações', icon: Settings },
+];
+
+function NavItem({
+  item,
+  active,
+  collapsed,
+  badge,
+  onClick,
+}: {
+  item: { id: string; label: string; icon: React.ElementType };
+  active: boolean;
+  collapsed: boolean;
+  badge?: number;
+  onClick: () => void;
+}) {
+  const Icon = item.icon;
+
+  return (
+    <button
+      onClick={onClick}
+      title={collapsed ? item.label : undefined}
+      className={`nav-item w-full text-left ${active ? 'active' : ''} ${collapsed ? 'justify-center px-2' : ''}`}
+    >
+      <div className="relative flex-shrink-0">
+        <Icon size={18} />
+        {badge !== undefined && badge > 0 && (
+          <span className="absolute -top-1.5 -right-1.5 bg-brand text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+            {badge > 9 ? '9+' : badge}
+          </span>
+        )}
+      </div>
+      {!collapsed && (
+        <span className="flex-1 truncate">{item.label}</span>
+      )}
+    </button>
+  );
+}
+
+export default function Sidebar({
+  activeSection,
+  onSectionChange,
+  collapsed,
+  onToggleCollapse,
+  mobileOpen,
+  onMobileClose,
+  notificationCount,
+  userName,
+}: SidebarProps) {
+  const initials = userName
+    .split(' ')
+    .slice(0, 2)
+    .map(n => n[0])
+    .join('')
+    .toUpperCase();
+
+  const sidebarContent = (
+    <div className="flex flex-col h-full">
+      {/* Logo */}
+      <div className={`flex items-center gap-3 px-4 py-5 ${collapsed ? 'justify-center px-2' : ''}`}>
+        <div className="w-8 h-8 rounded-lg bg-brand flex items-center justify-center flex-shrink-0">
+          <Wallet size={16} className="text-white" />
+        </div>
+        {!collapsed && (
+          <div>
+            <span className="text-white font-bold text-base leading-tight">FinanceFlow</span>
+            <span className="block text-[10px] text-sidebar-text leading-tight">Pro</span>
+          </div>
+        )}
+      </div>
+
+      <div className="sidebar-divider" />
+
+      {/* Main nav */}
+      <nav className="flex-1 px-2 py-2 space-y-0.5 overflow-y-auto">
+        {navItems.map(item => (
+          <NavItem
+            key={item.id}
+            item={item}
+            active={activeSection === item.id}
+            collapsed={collapsed}
+            onClick={() => { onSectionChange(item.id); onMobileClose(); }}
+          />
+        ))}
+      </nav>
+
+      <div className="sidebar-divider" />
+
+      {/* Bottom nav */}
+      <nav className="px-2 py-2 space-y-0.5">
+        {bottomItems.map(item => (
+          <NavItem
+            key={item.id}
+            item={item}
+            active={activeSection === item.id}
+            collapsed={collapsed}
+            badge={item.id === 'notifications' ? notificationCount : undefined}
+            onClick={() => { onSectionChange(item.id); onMobileClose(); }}
+          />
+        ))}
+      </nav>
+
+      <div className="sidebar-divider" />
+
+      {/* User + collapse toggle */}
+      <div className={`px-2 py-3 flex items-center gap-3 ${collapsed ? 'justify-center' : 'justify-between'}`}>
+        {!collapsed && (
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center flex-shrink-0">
+              <span className="text-white text-xs font-bold">{initials}</span>
+            </div>
+            <span className="text-sidebar-text text-xs truncate">{userName}</span>
+          </div>
+        )}
+        <button
+          onClick={onToggleCollapse}
+          className="w-7 h-7 rounded-lg flex items-center justify-center text-sidebar-text hover:bg-sidebar-hover hover:text-sidebar-text-active transition-colors flex-shrink-0"
+        >
+          {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <>
-      {/* Overlay para mobile  */}
+      {/* Desktop sidebar */}
+      <motion.aside
+        animate={{ width: collapsed ? 64 : 220 }}
+        transition={{ duration: 0.2, ease: 'easeInOut' }}
+        className="hidden md:flex flex-col h-screen sticky top-0 flex-shrink-0 overflow-hidden"
+        style={{ background: '#1C1C28' }}
+      >
+        {sidebarContent}
+      </motion.aside>
+
+      {/* Mobile overlay */}
       <AnimatePresence>
-        {sidebarOpen && (
-          <motion.div
-            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onSidebarToggle}
-          />
+        {mobileOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 z-40 md:hidden"
+              onClick={onMobileClose}
+            />
+            <motion.aside
+              initial={{ x: -240 }}
+              animate={{ x: 0 }}
+              exit={{ x: -240 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="fixed left-0 top-0 bottom-0 w-60 z-50 md:hidden flex flex-col"
+              style={{ background: '#1C1C28' }}
+            >
+              <button
+                onClick={onMobileClose}
+                className="absolute top-4 right-4 text-sidebar-text hover:text-sidebar-text-active"
+              >
+                <X size={18} />
+              </button>
+              {sidebarContent}
+            </motion.aside>
+          </>
         )}
       </AnimatePresence>
-
-      {/* Sidebar  Sempre visível no desktop */}
-      <motion.div
-        className={`fixed lg:static h-screen z-50 ${
-          darkMode 
-            ? 'bg-gray-900/95 border-r border-pink-500' 
-            : 'bg-white/95 border-r border-baby-200'
-        } shadow-xl transition-all duration-300 ${
-          sidebarOpen ? 'w-64' : 'w-20'
-        }`}
-        initial={{ x: -300 }}
-        animate={{ 
-          x: 0,
-          // No mobile: sidebar fica escondido por padrão
-          // No desktop: sidebar sempre visível
-          transform: window.innerWidth >= 1024 ? 'translateX(0)' : (sidebarOpen ? 'translateX(0)' : 'translateX(-100%)')
-        }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        style={{ 
-          backdropFilter: 'blur(10px)'
-        }}
-      >
-        {/* Header do Sidebar */}
-        <div className="p-4 border-b border-baby-200 dark:border-pink-400">
-          <div className="flex items-center justify-between">
-            <AnimatePresence>
-              {sidebarOpen && (
-                <motion.div
-                  className="flex items-center gap-3 flex-1"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                >
-                  <div className="w-10 h-10 bg-gradient-to-r from-pink-400 to-pink-500 rounded-xl flex items-center justify-center">
-                    <DollarSign className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                      FinanceFlow
-                    </h1>
-                    <p className="text-xs text-gray-500 dark:text-pink-200">
-                      Controle financeiro
-                    </p>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-            
-            {/* Botão de toggle do sidebar - SEMPRE VISÍVEL */}
-            <motion.button
-              onClick={onSidebarToggle}
-              className={`p-2 rounded-lg ${
-                darkMode 
-                  ? 'hover:bg-pink-800 text-pink-200' 
-                  : 'hover:bg-baby-100 text-gray-600'
-              } transition-colors`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              {sidebarOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-            </motion.button>
-          </div>
-        </div>
-
-        {/* Menu */}
-        <nav className="p-4">
-          <ul className="space-y-2">
-            {menuItems.map((item, index) => {
-              const Icon = item.icon;
-              return (
-                <motion.li
-                  key={item.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <button
-                    onClick={() => handleMenuClick(item.id)}
-                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 ${
-                      activeSection === item.id
-                        ? 'bg-pink-500 text-white shadow-md'
-                        : darkMode
-                        ? 'text-pink-200 hover:bg-pink-800'
-                        : 'text-gray-700 hover:bg-baby-100'
-                    } ${!sidebarOpen ? 'justify-center' : ''}`}
-                    title={!sidebarOpen ? item.label : ''}
-                  >
-                    <Icon className="w-5 h-5 flex-shrink-0" />
-                    <AnimatePresence>
-                      {sidebarOpen && (
-                        <motion.span
-                          initial={{ opacity: 0, width: 0 }}
-                          animate={{ opacity: 1, width: 'auto' }}
-                          exit={{ opacity: 0, width: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="font-medium whitespace-nowrap"
-                        >
-                          {item.label}
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
-                  </button>
-                </motion.li>
-              );
-            })}
-          </ul>
-        </nav>
-      </motion.div>
     </>
   );
 }

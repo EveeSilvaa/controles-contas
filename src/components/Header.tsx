@@ -1,158 +1,148 @@
-import { motion } from 'framer-motion';
-import { Search, User, Menu, Bell, Sun, Moon, LogOut, Settings, Calculator } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { Search, Menu, Bell, LogOut, Settings, Calculator, ChevronDown } from 'lucide-react';
+import type { User } from '../types';
 
 interface HeaderProps {
-  sidebarOpen: boolean;
-  setSidebarOpen: (open: boolean) => void;
-  user: {
-    nome: string;
-    email: string;
-    celular: string;
-  };
-  handleLogout: () => void;
-  darkMode: boolean;
-  setDarkMode: (darkMode: boolean) => void;
+  user: User;
+  onLogout: () => void;
+  onSectionChange: (section: string) => void;
+  onMobileMenuToggle: () => void;
+  notificationCount: number;
   onCalculatorToggle: () => void;
+  activeSection: string;
 }
 
-export default function Header({ 
-  sidebarOpen, 
-  setSidebarOpen, 
-  user, 
-  handleLogout, 
-  darkMode, 
-  setDarkMode,
-  onCalculatorToggle
+const sectionTitles: Record<string, { title: string; subtitle: string }> = {
+  dashboard: { title: 'Dashboard', subtitle: 'Visão geral das suas finanças' },
+  bills: { title: 'Contas a Pagar', subtitle: 'Gerencie suas despesas' },
+  income: { title: 'Receitas', subtitle: 'Controle suas entradas' },
+  analytics: { title: 'Análises', subtitle: 'Insights financeiros' },
+  goals: { title: 'Metas', subtitle: 'Acompanhe seus objetivos' },
+  calendar: { title: 'Calendário', subtitle: 'Lembretes e vencimentos' },
+  openfinance: { title: 'Open Finance', subtitle: 'Conecte seus bancos' },
+  notifications: { title: 'Notificações', subtitle: 'Alertas e avisos' },
+  settings: { title: 'Configurações', subtitle: 'Preferências do app' },
+};
+
+export default function Header({
+  user,
+  onLogout,
+  onSectionChange,
+  onMobileMenuToggle,
+  notificationCount,
+  onCalculatorToggle,
+  activeSection,
 }: HeaderProps) {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const currentSection = sectionTitles[activeSection] ?? sectionTitles.dashboard;
+
+  const initials = user.nome
+    .split(' ')
+    .slice(0, 2)
+    .map(n => n[0])
+    .join('')
+    .toUpperCase();
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
 
   return (
-    <header className={`
-      w-full bg-white dark:bg-gray-900/10 shadow-sm border-b border-baby-200 dark:border-pink-400 z-30
-    `}>
-      <div className="px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Lado esquerdo - Botão menu */}
-          <div className="flex items-center">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 text-gray-500 hover:text-gray-600 dark:text-pink-200 dark:hover:text-white rounded-lg hover:bg-baby-100 dark:hover:bg-pink-800 transition-colors md:hidden"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-          </div>
+    <header className="h-14 bg-surface border-b border-surface-200 flex items-center px-4 gap-4 sticky top-0 z-30">
+      {/* Mobile menu toggle */}
+      <button
+        onClick={onMobileMenuToggle}
+        className="md:hidden btn-ghost p-2"
+      >
+        <Menu size={20} />
+      </button>
 
-          {/* Barra de pesquisa - Centralizada */}
-          <div className="flex-1 max-w-2xl mx-4 md:mx-8">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <input
-                type="text"
-                placeholder="Pesquisar contas, transações..."
-                className="w-full pl-10 pr-4 py-2 border border-baby-300 dark:border-pink-400 rounded-lg bg-white dark:bg-pink-100 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-400 dark:focus:ring-pink-500 focus:border-transparent transition-all"
-              />
+      {/* Page title (hidden on small screens) */}
+      <div className="hidden sm:block min-w-0">
+        <h1 className="text-sm font-semibold text-ink truncate">{currentSection.title}</h1>
+        <p className="text-xs text-ink-faint truncate">{currentSection.subtitle}</p>
+      </div>
+
+      {/* Search */}
+      <div className="flex-1 max-w-sm">
+        <div className="relative">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-faint" />
+          <input
+            type="text"
+            placeholder="Buscar contas, receitas..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="input-sm pl-8 py-1.5 text-xs"
+          />
+        </div>
+      </div>
+
+      <div className="flex items-center gap-1 ml-auto">
+        {/* Calculator */}
+        <button onClick={onCalculatorToggle} className="btn-ghost p-2" title="Calculadora">
+          <Calculator size={18} />
+        </button>
+
+        {/* Notifications */}
+        <button
+          onClick={() => onSectionChange('notifications')}
+          className="btn-ghost p-2 relative"
+          title="Notificações"
+        >
+          <Bell size={18} />
+          {notificationCount > 0 && (
+            <span className="absolute top-1 right-1 bg-brand text-white text-[9px] font-bold rounded-full w-3.5 h-3.5 flex items-center justify-center">
+              {notificationCount > 9 ? '9+' : notificationCount}
+            </span>
+          )}
+        </button>
+
+        {/* User menu */}
+        <div className="relative" ref={menuRef}>
+          <button
+            onClick={() => setUserMenuOpen(v => !v)}
+            className="flex items-center gap-2 pl-2 pr-1 py-1 rounded-lg hover:bg-surface-100 transition-colors"
+          >
+            <div className="w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center">
+              <span className="text-white text-xs font-bold">{initials}</span>
             </div>
-          </div>
+            <span className="hidden sm:block text-sm font-medium text-ink max-w-[100px] truncate">
+              {user.nome.split(' ')[0]}
+            </span>
+            <ChevronDown size={14} className="text-ink-muted" />
+          </button>
 
-          {/* Lado direito - Ícones e usuário */}
-          <div className="flex items-center space-x-3">
-            {/* Botão Calculadora */}
-            <motion.button
-              onClick={onCalculatorToggle}
-              className="p-2 text-gray-500 hover:text-gray-600 dark:text-pink-200 dark:hover:text-white rounded-lg hover:bg-baby-100 dark:hover:bg-pink-800 transition-colors"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              title="Calculadora"
-            >
-              <Calculator className="w-5 h-5" />
-            </motion.button>
-
-            {/* Botão dark/light mode */}
-            <motion.button
-              onClick={() => setDarkMode(!darkMode)}
-              className="p-2 text-gray-500 hover:text-gray-600 dark:text-pink-200 dark:hover:text-white rounded-lg hover:bg-baby-100 dark:hover:bg-pink-800 transition-colors"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              title={darkMode ? "Modo claro" : "Modo escuro"}
-            >
-              {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </motion.button>
-
-            {/* Notificações */}
-            <motion.button 
-              className="p-2 text-gray-500 hover:text-gray-600 dark:text-pink-200 dark:hover:text-white rounded-lg hover:bg-baby-100 dark:hover:bg-pink-800 transition-colors relative"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              title="Notificações"
-            >
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-            </motion.button>
-
-            {/* Menu do usuário */}
-            <div className="relative">
-              <motion.button
-                onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="flex items-center space-x-2 p-2 rounded-lg hover:bg-baby-100 dark:hover:bg-pink-800 transition-colors min-w-0"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                title="Menu do usuário"
+          {userMenuOpen && (
+            <div className="absolute right-0 top-full mt-1.5 w-48 card shadow-modal py-1 z-50">
+              <div className="px-3 py-2 border-b border-surface-100">
+                <p className="text-xs font-semibold text-ink truncate">{user.nome}</p>
+                <p className="text-xs text-ink-muted truncate">{user.email}</p>
+              </div>
+              <button
+                onClick={() => { onSectionChange('settings'); setUserMenuOpen(false); }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-ink hover:bg-surface-50 transition-colors"
               >
-                <div className="w-8 h-8 bg-gradient-to-r from-pink-400 to-pink-500 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-md flex-shrink-0">
-                  {user.nome.charAt(0).toUpperCase()}
-                </div>
-                <div className="text-left hidden lg:block min-w-0">
-                  <span className="text-sm font-medium text-gray-700 dark:text-white block truncate max-w-[120px]">
-                    {user.nome}
-                  </span>
-                  <span className="text-xs text-gray-500 dark:text-pink-200 truncate max-w-[120px]">
-                    Premium
-                  </span>
-                </div>
-              </motion.button>
-
-              {userMenuOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  className="absolute right-0 mt-2 w-64 bg-white dark:bg-pink-800 rounded-xl shadow-lg border border-baby-200 dark:border-pink-700 py-2 z-50"
-                >
-                  <div className="px-4 py-3 border-b border-baby-200 dark:border-pink-700">
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{user.nome}</p>
-                    <p className="text-sm text-gray-500 dark:text-pink-200 truncate">{user.email}</p>
-                    <p className="text-xs text-gray-400 dark:text-pink-300 mt-1 truncate">{user.celular}</p>
-                  </div>
-                  
-                  <div className="py-1">
-                    <button className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 dark:text-pink-200 hover:bg-baby-100 dark:hover:bg-pink-700 transition-colors">
-                      <User className="w-4 h-4 flex-shrink-0" />
-                      <span className="truncate">Meu Perfil</span>
-                    </button>
-                    
-                    <button className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 dark:text-pink-200 hover:bg-baby-100 dark:hover:bg-pink-700 transition-colors">
-                      <Settings className="w-4 h-4 flex-shrink-0" />
-                      <span className="truncate">Configurações</span>
-                    </button>
-                  </div>
-                  
-                  <div className="border-t border-baby-200 dark:border-pink-700 pt-1">
-                    <button
-                      onClick={() => {
-                        handleLogout();
-                        setUserMenuOpen(false);
-                      }}
-                      className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                    >
-                      <LogOut className="w-4 h-4 flex-shrink-0" />
-                      <span>Sair da conta</span>
-                    </button>
-                  </div>
-                </motion.div>
-              )}
+                <Settings size={14} className="text-ink-muted" />
+                Configurações
+              </button>
+              <button
+                onClick={() => { onLogout(); setUserMenuOpen(false); }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-danger hover:bg-danger-light transition-colors"
+              >
+                <LogOut size={14} />
+                Sair
+              </button>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </header>
