@@ -194,29 +194,29 @@ export default function Dashboard({
       {(overdueBills.length > 0 || dueSoonBills.length > 0) && (
         <div className="space-y-2">
           {overdueBills.length > 0 && (
-            <div className="flex items-center gap-3 px-4 py-3 bg-danger-light border border-danger/20 rounded-xl text-sm">
-              <AlertTriangle size={16} className="text-danger flex-shrink-0" />
-              <span className="text-danger font-medium">
-                {overdueBills.length} conta{overdueBills.length > 1 ? 's' : ''} em atraso:
-              </span>
-              <span className="text-danger/80 truncate">
-                {overdueBills.slice(0, 2).map(b => b.name).join(', ')}{overdueBills.length > 2 ? '...' : ''}
-              </span>
+            <div className="flex items-start gap-3 px-4 py-3 bg-danger-light border border-danger/20 rounded-xl text-sm">
+              <AlertTriangle size={16} className="text-danger flex-shrink-0 mt-0.5" />
+              <p className="text-danger min-w-0">
+                <span className="font-medium">{overdueBills.length} conta{overdueBills.length > 1 ? 's' : ''} em atraso: </span>
+                <span className="opacity-80 break-words">
+                  {overdueBills.slice(0, 2).map(b => b.name).join(', ')}{overdueBills.length > 2 ? '...' : ''}
+                </span>
+              </p>
             </div>
           )}
           {dueSoonBills.length > 0 && (
-            <div className="flex items-center gap-3 px-4 py-3 bg-warning-light border border-warning/20 rounded-xl text-sm">
-              <Clock size={16} className="text-warning flex-shrink-0" />
-              <span className="text-warning-dark font-medium">
+            <div className="flex items-start gap-3 px-4 py-3 bg-warning-light border border-warning/20 rounded-xl text-sm">
+              <Clock size={16} className="text-warning flex-shrink-0 mt-0.5" />
+              <p className="text-warning-dark font-medium">
                 {dueSoonBills.length} conta{dueSoonBills.length > 1 ? 's' : ''} vence{dueSoonBills.length > 1 ? 'm' : ''} em até 7 dias
-              </span>
+              </p>
             </div>
           )}
         </div>
       )}
 
       {/* KPI row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <KpiCard label="Saldo Disponível" value={formatCurrency(availableMoney)}
           sub="Clique para atualizar" icon={Wallet} color="#22D68A"
           editable onEdit={onMoneyChange} />
@@ -231,12 +231,12 @@ export default function Dashboard({
       </div>
 
       {/* Charts row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
         {/* Bar chart */}
         <div className="card-p lg:col-span-2">
           <h3 className="font-semibold text-ink text-sm mb-4">Receitas vs Despesas (6 meses)</h3>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={monthlyData} barGap={4}>
+          <ResponsiveContainer width="100%" height={180}>
+            <BarChart data={monthlyData} barGap={2} margin={{ left: -10, right: 4 }}>
               <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#6B6B88' }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 11, fill: '#6B6B88' }} axisLine={false} tickLine={false}
                 tickFormatter={v => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
@@ -254,9 +254,9 @@ export default function Dashboard({
         <div className="card-p">
           <h3 className="font-semibold text-ink text-sm mb-4">Despesas por Categoria</h3>
           {categoryData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={200}>
+            <ResponsiveContainer width="100%" height={180}>
               <PieChart>
-                <Pie data={categoryData} cx="50%" cy="50%" innerRadius={50} outerRadius={75}
+                <Pie data={categoryData} cx="50%" cy="45%" innerRadius={45} outerRadius={65}
                   dataKey="value" paddingAngle={2}>
                   {categoryData.map((entry, i) => (
                     <Cell key={i} fill={entry.color} />
@@ -264,12 +264,12 @@ export default function Dashboard({
                 </Pie>
                 <Tooltip formatter={(v: number) => formatCurrency(v)}
                   contentStyle={{ border: '1px solid #E2E8F0', borderRadius: 8, fontSize: 12 }} />
-                <Legend iconType="circle" iconSize={8}
+                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }}
                   formatter={(v) => <span style={{ fontSize: 11, color: '#6B6B88' }}>{v}</span>} />
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-[200px] flex items-center justify-center text-ink-faint text-sm">
+            <div className="h-[180px] flex items-center justify-center text-ink-faint text-sm">
               Sem dados de despesas
             </div>
           )}
@@ -277,7 +277,7 @@ export default function Dashboard({
       </div>
 
       {/* Recent bills + future transactions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
         {/* Recent bills */}
         <div className="card-p">
           <h3 className="font-semibold text-ink text-sm mb-4">Contas Recentes</h3>

@@ -32,27 +32,24 @@ export const parseFormattedNumber = (formattedValue: string): number => {
 // Formatação para input de valores monetários
 export const formatInputCurrency = (value: string): string => {
   if (!value) return '';
-  
-  // Remove caracteres não numéricos exceto vírgula
+
+  // Remove tudo exceto dígitos e vírgula
   const cleanValue = value.replace(/[^\d,]/g, '');
-  
+
   if (cleanValue === '') return '';
-  
-  // Se começa com vírgula
-  if (cleanValue.startsWith(',')) {
-    const decimalPart = cleanValue.slice(1).replace(/\D/g, '').slice(0, 2);
-    return `0,${decimalPart.padEnd(2, '0')}`;
-  }
-  
+
+  const hasComma = cleanValue.includes(',');
   const parts = cleanValue.split(',');
   let integerPart = parts[0].replace(/\D/g, '');
-  const decimalPart = parts[1] ? parts[1].replace(/\D/g, '').slice(0, 2) : '';
-  
+  // Limita decimais a 2 dígitos
+  const decimalPart = parts[1] !== undefined ? parts[1].replace(/\D/g, '').slice(0, 2) : '';
+
   // Remove zeros à esquerda
   integerPart = integerPart.replace(/^0+/, '') || '0';
-  
-  // Formata parte inteira
+
+  // Formata parte inteira com separador de milhar
   const formattedInteger = parseInt(integerPart).toLocaleString('pt-BR');
-  
-  return decimalPart ? `${formattedInteger},${decimalPart}` : formattedInteger;
+
+  // Preserva a vírgula mesmo quando o usuário ainda não digitou decimais
+  return hasComma ? `${formattedInteger},${decimalPart}` : formattedInteger;
 };
