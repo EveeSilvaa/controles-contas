@@ -122,7 +122,7 @@ export default function Goals({ goals, setGoals, bills }: GoalsProps) {
 
       {/* Summary */}
       {goals.length > 0 && (
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
             { label: 'Orçamento Total', value: formatCurrency(totalBudget), icon: Target, color: '#4F8EF7' },
             { label: 'Gasto até agora', value: formatCurrency(totalSpent), icon: TrendingUp, color: totalSpent > totalBudget ? '#FF4D4D' : '#22D68A' },

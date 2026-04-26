@@ -89,12 +89,12 @@ export default function Analytics({ bills, incomes }: AnalyticsProps) {
   return (
     <motion.div className="space-y-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
           <h2 className="section-title">Análises Financeiras</h2>
           <p className="section-subtitle">Insights detalhados sobre suas finanças</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <div className="flex items-center gap-1 bg-surface-100 rounded-lg p-1">
             {(['3m', '6m', '12m'] as Period[]).map(p => (
               <button key={p} onClick={() => setPeriod(p)}
@@ -104,7 +104,7 @@ export default function Analytics({ bills, incomes }: AnalyticsProps) {
             ))}
           </div>
           <button onClick={exportReport} className="btn-secondary py-2 text-xs">
-            <Download size={14} /> Exportar
+            <Download size={14} /><span className="hidden sm:inline"> Exportar</span>
           </button>
         </div>
       </div>

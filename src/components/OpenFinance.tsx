@@ -53,7 +53,7 @@ export default function OpenFinance() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 border-b border-surface-200">
+      <div className="flex items-center gap-1 border-b border-surface-200 overflow-x-auto scrollbar-none">
         {([
           { id: 'connect', label: 'Conectar Banco', icon: Building2 },
           { id: 'boletos', label: 'Boletos por CPF', icon: FileText },
@@ -62,7 +62,7 @@ export default function OpenFinance() {
           const Icon = tab.icon;
           return (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors -mb-px ${
+              className={`flex items-center gap-2 px-3 sm:px-4 py-3 text-sm font-medium border-b-2 transition-colors -mb-px whitespace-nowrap ${
                 activeTab === tab.id
                   ? 'border-brand text-brand-600'
                   : 'border-transparent text-ink-muted hover:text-ink'
@@ -84,7 +84,7 @@ export default function OpenFinance() {
                   <Zap size={16} className="text-brand" />
                   <h3 className="font-semibold text-ink text-sm">Selecione seu banco</h3>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                   {BANKS.map(bank => (
                     <button
                       key={bank.id}
