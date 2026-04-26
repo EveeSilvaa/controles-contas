@@ -121,8 +121,8 @@
     @apply card-p flex flex-col gap-3;
   }
 
-  /* ── Table row — mobile-safe ── */
-  .table-row {
+  /* ── List row — mobile-safe ── */
+  .list-row {
     @apply flex items-center border-b border-surface-100
            py-3 px-4 sm:py-3.5
            hover:bg-surface-50 transition-colors duration-100;

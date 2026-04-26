@@ -221,7 +221,7 @@ export default function IncomeManager({ incomes, setIncomes, addNotification }: 
                 return (
                   <motion.div key={income.id} layout
                     initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -20 }}
-                    className="table-row">
+                    className="list-row">
                     <button onClick={() => handleToggle(income.id)}
                       className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mr-3 transition-all ${
                         income.received ? 'bg-brand border-brand text-white' : 'border-surface-200 hover:border-brand'
